@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Smile, Frown, Zap, Coffee, Heart, Battery, Brain, PartyPopper, Coffee2, Target } from "lucide-react";
+import { Smile, Frown, Zap, Coffee, Heart, Battery, Brain, PartyPopper, Mug, Target } from "lucide-react";
 
 interface EmotionOption {
   name: string;
@@ -16,7 +16,7 @@ const emotions: EmotionOption[] = [
   { name: "Tired", icon: <Battery className="w-6 h-6" />, color: "bg-purple-100 hover:bg-purple-200" },
   { name: "Anxious", icon: <Brain className="w-6 h-6" />, color: "bg-red-100 hover:bg-red-200" },
   { name: "Excited", icon: <PartyPopper className="w-6 h-6" />, color: "bg-pink-100 hover:bg-pink-200" },
-  { name: "Bored", icon: <Coffee2 className="w-6 h-6" />, color: "bg-gray-100 hover:bg-gray-200" },
+  { name: "Bored", icon: <Mug className="w-6 h-6" />, color: "bg-gray-100 hover:bg-gray-200" },
   { name: "Motivated", icon: <Target className="w-6 h-6" />, color: "bg-indigo-100 hover:bg-indigo-200" },
 ];
 
