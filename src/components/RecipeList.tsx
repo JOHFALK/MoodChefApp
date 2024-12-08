@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { RecipeCard } from "./RecipeCard";
 import { MindfulPrompt } from "./MindfulPrompt";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Recipe {
@@ -20,54 +21,38 @@ interface RecipeListProps {
 }
 
 export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchRecipes();
-  }, [selectedEmotions, ingredients]);
-
-  const fetchRecipes = async () => {
-    try {
-      setLoading(true);
+  const { data: recipes, isLoading } = useQuery({
+    queryKey: ['recipes', selectedEmotions, ingredients],
+    queryFn: async () => {
       let query = supabase
         .from('recipes')
         .select('*')
         .eq('status', 'approved');
 
-      // Filter by emotions if any are selected
       if (selectedEmotions.length > 0) {
         query = query.contains('emotions', selectedEmotions);
       }
 
-      // Filter by ingredients if any are provided
       if (ingredients.length > 0) {
         query = query.contains('ingredients', ingredients);
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
 
-      // Map the Supabase data to match our Recipe interface
-      const mappedRecipes: Recipe[] = (data || []).map(recipe => ({
+      return (data || []).map(recipe => ({
         id: recipe.id,
         title: recipe.title,
         description: recipe.description || '',
         cookingTime: recipe.cooking_time || 0,
-        servings: 2, // Default value since it's not in the database
+        servings: 2,
         emotions: recipe.emotions,
         ingredients: recipe.ingredients,
         votes: recipe.votes || 0
       }));
-
-      setRecipes(mappedRecipes);
-    } catch (error) {
-      console.error('Error fetching recipes:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    staleTime: 1000 * 60, // Cache for 1 minute
+  });
 
   if (selectedEmotions.length === 0) {
     return (
@@ -79,7 +64,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="text-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -91,7 +76,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
     <div className="space-y-8">
       <MindfulPrompt emotions={selectedEmotions} />
       
-      {recipes.length === 0 ? (
+      {!recipes?.length ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">
             No recipes found matching your mood and ingredients. Try adjusting your selections!
@@ -100,10 +85,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {recipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-            />
+            <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </div>
       )}
