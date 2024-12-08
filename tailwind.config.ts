@@ -25,7 +25,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#9b87f5",
+          DEFAULT: "#8B5CF6",
           foreground: "#ffffff",
           50: "#f5f3ff",
           100: "#ede9fe",
@@ -39,18 +39,22 @@ export default {
           900: "#4c1d95",
         },
         secondary: {
-          DEFAULT: "#FDE1D3",
+          DEFAULT: "#E5DEFF",
           foreground: "#1A1F2C",
-          50: "#fff7ed",
-          100: "#ffedd5",
-          200: "#fed7aa",
-          300: "#fdba74",
-          400: "#fb923c",
-          500: "#f97316",
-          600: "#ea580c",
-          700: "#c2410c",
-          800: "#9a3412",
-          900: "#7c2d12",
+          50: "#f8f7ff",
+          100: "#f3f1ff",
+          200: "#e5deff",
+          300: "#d4caff",
+          400: "#b39dff",
+          500: "#9b87f5",
+          600: "#7e69ab",
+          700: "#6e59a5",
+          800: "#4a3b6b",
+          900: "#2d2440",
+        },
+        accent: {
+          DEFAULT: "#7E69AB",
+          foreground: "#ffffff",
         },
         mood: {
           happy: "#FFD93D",
@@ -73,10 +77,6 @@ export default {
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "#F97316",
-          foreground: "#ffffff",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
