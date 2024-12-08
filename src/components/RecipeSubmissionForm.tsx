@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
-import { Form } from "./ui/form";
+import { Form, FormLabel } from "./ui/form";
 import { EmotionSelector } from "./EmotionSelector";
 import { IngredientInput } from "./IngredientInput";
 import { Loader2 } from "lucide-react";
