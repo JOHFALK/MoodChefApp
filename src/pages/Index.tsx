@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { EmotionSelector } from "@/components/EmotionSelector";
 import { IngredientInput } from "@/components/IngredientInput";
+import { RecipeList } from "@/components/RecipeList";
 import { Button } from "@/components/ui/button";
 import { ChefHat } from "lucide-react";
 
 const Index = () => {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [showRecipes, setShowRecipes] = useState(false);
 
   const handleEmotionSelect = (emotion: string) => {
     if (selectedEmotions.includes(emotion)) {
@@ -14,6 +16,10 @@ const Index = () => {
     } else if (selectedEmotions.length < 2) {
       setSelectedEmotions([...selectedEmotions, emotion]);
     }
+  };
+
+  const handleFindRecipes = () => {
+    setShowRecipes(true);
   };
 
   return (
@@ -42,10 +48,17 @@ const Index = () => {
             size="lg"
             className="bg-primary text-white hover:bg-primary/90"
             disabled={selectedEmotions.length === 0}
+            onClick={handleFindRecipes}
           >
             Find Recipes
           </Button>
         </div>
+        {showRecipes && (
+          <RecipeList
+            selectedEmotions={selectedEmotions}
+            ingredients={ingredients}
+          />
+        )}
       </main>
     </div>
   );
