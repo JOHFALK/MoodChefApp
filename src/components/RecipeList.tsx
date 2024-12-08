@@ -7,7 +7,7 @@ interface Recipe {
   id: string;
   title: string;
   description: string;
-  cooking_time: number;
+  cookingTime: number;
   servings: number;
   emotions: string[];
   ingredients: string[];
@@ -48,7 +48,20 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       const { data, error } = await query;
 
       if (error) throw error;
-      setRecipes(data || []);
+
+      // Map the Supabase data to match our Recipe interface
+      const mappedRecipes: Recipe[] = (data || []).map(recipe => ({
+        id: recipe.id,
+        title: recipe.title,
+        description: recipe.description || '',
+        cookingTime: recipe.cooking_time || 0,
+        servings: 2, // Default value since it's not in the database
+        emotions: recipe.emotions,
+        ingredients: recipe.ingredients,
+        votes: recipe.votes || 0
+      }));
+
+      setRecipes(mappedRecipes);
     } catch (error) {
       console.error('Error fetching recipes:', error);
     } finally {
@@ -89,16 +102,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
           {recipes.map((recipe) => (
             <RecipeCard
               key={recipe.id}
-              recipe={{
-                id: recipe.id,
-                title: recipe.title,
-                description: recipe.description,
-                cookingTime: recipe.cooking_time,
-                servings: 2, // Default value since it's not in the schema
-                emotions: recipe.emotions,
-                ingredients: recipe.ingredients,
-                votes: recipe.votes,
-              }}
+              recipe={recipe}
             />
           ))}
         </div>
