@@ -78,6 +78,42 @@ export type Database = {
           },
         ]
       }
+      recipe_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          recipe_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          recipe_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          recipe_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_votes_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           cooking_time: number | null
@@ -88,7 +124,10 @@ export type Database = {
           image_url: string | null
           ingredients: string[]
           instructions: string[]
+          status: string | null
           title: string
+          user_id: string | null
+          votes: number | null
         }
         Insert: {
           cooking_time?: number | null
@@ -99,7 +138,10 @@ export type Database = {
           image_url?: string | null
           ingredients: string[]
           instructions: string[]
+          status?: string | null
           title: string
+          user_id?: string | null
+          votes?: number | null
         }
         Update: {
           cooking_time?: number | null
@@ -110,9 +152,20 @@ export type Database = {
           image_url?: string | null
           ingredients?: string[]
           instructions?: string[]
+          status?: string | null
           title?: string
+          user_id?: string | null
+          votes?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "recipes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

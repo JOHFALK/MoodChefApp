@@ -1,63 +1,18 @@
+import { useEffect, useState } from "react";
 import { RecipeCard } from "./RecipeCard";
 import { MindfulPrompt } from "./MindfulPrompt";
+import { supabase } from "@/integrations/supabase/client";
 
-// Enhanced mock data with emotion-specific recipes
-const mockRecipes = [
-  {
-    id: "1",
-    title: "Calming Chamomile Pasta",
-    description: "A soothing pasta dish with chamomile-infused sauce, perfect for anxiety relief.",
-    cookingTime: 30,
-    servings: 2,
-    emotions: ["Anxious", "Tired"],
-    ingredients: ["pasta", "chamomile tea", "cream", "garlic", "lavender"],
-  },
-  {
-    id: "2",
-    title: "Energizing Berry Smoothie Bowl",
-    description: "A vibrant smoothie bowl packed with antioxidants and energy-boosting ingredients.",
-    cookingTime: 15,
-    servings: 1,
-    emotions: ["Happy", "Energetic"],
-    ingredients: ["berries", "banana", "yogurt", "honey", "chia seeds"],
-  },
-  {
-    id: "3",
-    title: "Comfort Mac and Cheese",
-    description: "A warm, comforting classic with mood-lifting spices.",
-    cookingTime: 45,
-    servings: 4,
-    emotions: ["Sad", "Stressed"],
-    ingredients: ["macaroni", "cheese", "milk", "nutmeg", "black pepper"],
-  },
-  {
-    id: "4",
-    title: "Mindful Mediterranean Bowl",
-    description: "A balanced bowl of goodness to promote focus and calm.",
-    cookingTime: 25,
-    servings: 2,
-    emotions: ["Calm", "Confident"],
-    ingredients: ["quinoa", "chickpeas", "olive oil", "vegetables", "herbs"],
-  },
-  {
-    id: "5",
-    title: "Spicy Satisfaction Stir-Fry",
-    description: "A quick and engaging dish perfect for channeling energy.",
-    cookingTime: 20,
-    servings: 2,
-    emotions: ["Angry", "Bored"],
-    ingredients: ["rice", "vegetables", "tofu", "chili", "ginger"],
-  },
-  {
-    id: "6",
-    title: "Achievement Avocado Toast",
-    description: "A nutrient-rich, brain-boosting breakfast to fuel your goals.",
-    cookingTime: 10,
-    servings: 1,
-    emotions: ["Motivated", "Excited"],
-    ingredients: ["bread", "avocado", "eggs", "seeds", "microgreens"],
-  },
-];
+interface Recipe {
+  id: string;
+  title: string;
+  description: string;
+  cooking_time: number;
+  servings: number;
+  emotions: string[];
+  ingredients: string[];
+  votes: number;
+}
 
 interface RecipeListProps {
   selectedEmotions: string[];
@@ -65,22 +20,41 @@ interface RecipeListProps {
 }
 
 export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
-  // Filter recipes based on emotions and ingredients
-  const filteredRecipes = mockRecipes.filter((recipe) => {
-    // Check if the recipe matches at least one selected emotion
-    const hasMatchingEmotion = selectedEmotions.length === 0 || 
-      recipe.emotions.some((emotion) => selectedEmotions.includes(emotion));
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    // Check if the recipe uses at least some of the available ingredients
-    const hasMatchingIngredients = ingredients.length === 0 ||
-      recipe.ingredients.some((ingredient) => 
-        ingredients.some((userIngredient) => 
-          ingredient.toLowerCase().includes(userIngredient.toLowerCase())
-        )
-      );
+  useEffect(() => {
+    fetchRecipes();
+  }, [selectedEmotions, ingredients]);
 
-    return hasMatchingEmotion && hasMatchingIngredients;
-  });
+  const fetchRecipes = async () => {
+    try {
+      setLoading(true);
+      let query = supabase
+        .from('recipes')
+        .select('*')
+        .eq('status', 'approved');
+
+      // Filter by emotions if any are selected
+      if (selectedEmotions.length > 0) {
+        query = query.contains('emotions', selectedEmotions);
+      }
+
+      // Filter by ingredients if any are provided
+      if (ingredients.length > 0) {
+        query = query.contains('ingredients', ingredients);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setRecipes(data || []);
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (selectedEmotions.length === 0) {
     return (
@@ -92,11 +66,19 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <MindfulPrompt emotions={selectedEmotions} />
       
-      {filteredRecipes.length === 0 ? (
+      {recipes.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">
             No recipes found matching your mood and ingredients. Try adjusting your selections!
@@ -104,8 +86,20 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRecipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
+          {recipes.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={{
+                id: recipe.id,
+                title: recipe.title,
+                description: recipe.description,
+                cookingTime: recipe.cooking_time,
+                servings: 2, // Default value since it's not in the schema
+                emotions: recipe.emotions,
+                ingredients: recipe.ingredients,
+                votes: recipe.votes,
+              }}
+            />
           ))}
         </div>
       )}
