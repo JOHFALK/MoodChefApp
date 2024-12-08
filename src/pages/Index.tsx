@@ -4,12 +4,13 @@ import { IngredientInput } from "@/components/IngredientInput";
 import { RecipeList } from "@/components/RecipeList";
 import { RecipeSubmissionForm } from "@/components/RecipeSubmissionForm";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Plus, Home, Search, User, Menu } from "lucide-react";
+import { ChefHat, Plus, Home, Search, User, Menu, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useToast } from "@/components/ui/use-toast";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Index = () => {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
@@ -68,19 +69,23 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative pb-16">
-      {/* Header with slide-out menu */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
+    <div className="min-h-screen bg-background relative pb-20">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-primary/10">
         <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
-          <div className="flex items-center gap-2">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3"
+          >
             <ChefHat className="w-8 h-8 text-primary animate-float" />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               MoodChef
             </h1>
-          </div>
+          </motion.div>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="hover:bg-primary/10">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
@@ -90,14 +95,14 @@ const Index = () => {
                   <>
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full bg-primary/5 hover:bg-primary/10 border-primary/20"
                       onClick={() => navigate("/dashboard")}
                     >
                       Dashboard
                     </Button>
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full bg-secondary/5 hover:bg-secondary/10 border-secondary/20"
                       onClick={handleSubmitRecipe}
                     >
                       Submit Recipe
@@ -106,7 +111,7 @@ const Index = () => {
                 ) : (
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full bg-primary/5 hover:bg-primary/10 border-primary/20"
                     onClick={() => navigate("/login")}
                   >
                     Sign In
@@ -119,72 +124,102 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container pt-20 pb-8 space-y-8 max-w-5xl mx-auto px-4">
-        {showSubmissionForm ? (
-          <>
-            <Button
-              variant="ghost"
-              onClick={() => setShowSubmissionForm(false)}
-              className="mb-4"
+      <main className="container pt-24 pb-8 space-y-8 max-w-5xl mx-auto px-4">
+        <AnimatePresence mode="wait">
+          {showSubmissionForm ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
             >
-              ← Back to Recipes
-            </Button>
-            <RecipeSubmissionForm />
-          </>
-        ) : (
-          <>
-            <EmotionSelector
-              selectedEmotions={selectedEmotions}
-              onEmotionSelect={handleEmotionSelect}
-            />
-            <IngredientInput
-              ingredients={ingredients}
-              onIngredientsChange={setIngredients}
-            />
-            <div className="flex justify-center">
               <Button
-                size="lg"
-                className="bg-primary text-white hover:bg-primary-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                disabled={selectedEmotions.length === 0}
-                onClick={() => setShowRecipes(true)}
+                variant="ghost"
+                onClick={() => setShowSubmissionForm(false)}
+                className="mb-4 hover:bg-primary/10"
               >
-                Find Recipes
+                ← Back to Recipes
               </Button>
-            </div>
-            {showRecipes && (
-              <RecipeList
+              <RecipeSubmissionForm />
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8"
+            >
+              <EmotionSelector
                 selectedEmotions={selectedEmotions}
-                ingredients={ingredients}
+                onEmotionSelect={handleEmotionSelect}
               />
-            )}
-          </>
-        )}
+              <IngredientInput
+                ingredients={ingredients}
+                onIngredientsChange={setIngredients}
+              />
+              <motion.div 
+                className="flex justify-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Button
+                  size="lg"
+                  className="bg-primary hover:bg-primary-600 text-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:hover:transform-none"
+                  disabled={selectedEmotions.length === 0}
+                  onClick={() => setShowRecipes(true)}
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Find Perfect Recipes
+                </Button>
+              </motion.div>
+              {showRecipes && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <RecipeList
+                    selectedEmotions={selectedEmotions}
+                    ingredients={ingredients}
+                  />
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-primary/10 z-50">
         <div className="max-w-md mx-auto flex justify-around p-2">
-          <Button variant="ghost" className="flex-col gap-1" onClick={() => setShowSubmissionForm(false)}>
+          <Button 
+            variant="ghost" 
+            className="flex-col gap-1 hover:bg-primary/10" 
+            onClick={() => setShowSubmissionForm(false)}
+          >
             <Home className="w-5 h-5" />
             <span className="text-xs">Home</span>
           </Button>
-          <Button variant="ghost" className="flex-col gap-1" onClick={() => setShowRecipes(true)}>
+          <Button 
+            variant="ghost" 
+            className="flex-col gap-1 hover:bg-primary/10" 
+            onClick={() => setShowRecipes(true)}
+          >
             <Search className="w-5 h-5" />
             <span className="text-xs">Search</span>
           </Button>
           <Button
             variant="ghost"
-            className="flex-col gap-1 relative"
+            className="flex-col gap-1 relative hover:bg-transparent"
             onClick={handleSubmitRecipe}
           >
-            <div className="absolute -top-6 bg-primary rounded-full p-3 shadow-lg">
+            <div className="absolute -top-6 bg-primary rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
               <Plus className="w-5 h-5 text-white" />
             </div>
             <span className="text-xs mt-4">Add</span>
           </Button>
           <Button
             variant="ghost"
-            className="flex-col gap-1"
+            className="flex-col gap-1 hover:bg-primary/10"
             onClick={() => navigate(user ? "/dashboard" : "/login")}
           >
             <User className="w-5 h-5" />

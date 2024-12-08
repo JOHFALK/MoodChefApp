@@ -126,23 +126,18 @@ export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSe
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="text-center space-y-4 mb-8">
-        <motion.h2 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
-        >
+      <motion.div 
+        className="text-center space-y-4 mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           How are you feeling today?
-        </motion.h2>
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-muted-foreground"
-        >
+        </h2>
+        <p className="text-muted-foreground">
           Select up to 2 emotions to find recipes that match your mood
-        </motion.p>
-      </div>
+        </p>
+      </motion.div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
         {emotions.map((emotion, index) => (
           <motion.div
@@ -159,25 +154,38 @@ export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSe
                 emotion.color,
                 selectedEmotions.includes(emotion.name) && 
                 "ring-2 ring-primary shadow-lg scale-105",
-                "hover:scale-105 hover:shadow-md"
+                "hover:scale-105 hover:shadow-md group"
               )}
               onClick={() => handleEmotionSelect(emotion.name)}
             >
-              {emotion.icon}
-              <span className="text-sm font-medium">{emotion.name}</span>
+              <motion.div
+                initial={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                className="transition-colors group-hover:text-primary"
+              >
+                {emotion.icon}
+              </motion.div>
+              <span className="text-sm font-medium group-hover:text-primary transition-colors">
+                {emotion.name}
+              </span>
             </Button>
           </motion.div>
         ))}
       </div>
-      {selectedEmotions.length > 0 && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mt-6 text-center text-sm text-muted-foreground"
-        >
-          Selected emotions: {selectedEmotions.join(" + ")}
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {selectedEmotions.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mt-6 text-center"
+          >
+            <span className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              Selected: {selectedEmotions.join(" + ")}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
