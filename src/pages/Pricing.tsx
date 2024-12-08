@@ -6,8 +6,8 @@ import { Check, ChefHat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
-const MONTHLY_PRICE_ID = "prod_RMbbJTzfPhcfVc";
-const YEARLY_PRICE_ID = "prod_RMbgMdexhT20sQ";
+const MONTHLY_PRICE_ID = "price_1QTsOKHDqG3OwXYCGz5zoSAk";
+const YEARLY_PRICE_ID = "price_1QTsTBHDqG3OwXYC2Bywnpnx";
 
 export default function Pricing() {
   const [loading, setLoading] = useState(false);
