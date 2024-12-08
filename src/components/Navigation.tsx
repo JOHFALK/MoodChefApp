@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Search, Plus, User, ChefHat, Users } from "lucide-react";
+import { ChefHat, Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -40,35 +47,80 @@ export function Navigation() {
     navigate("/submit");
   };
 
+  const navItems = [
+    { label: "Explore", path: "/" },
+    { label: "Community", path: "/community" },
+    { label: "Pricing", path: "/pricing" },
+  ];
+
   return (
-    <>
-      {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-primary/10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-3 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <ChefHat className="w-8 h-8 text-primary animate-float" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <ChefHat className="w-7 h-7 text-primary" />
+            <span className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
               MoodChef
-            </h1>
+            </span>
           </motion.div>
-          <div className="flex items-center gap-4">
-            {user ? (
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
               <Button
+                key={item.path}
                 variant="ghost"
-                className="text-sm font-medium hover:bg-primary/10"
-                onClick={() => navigate("/dashboard")}
+                className={cn(
+                  "text-sm font-medium hover:bg-primary/10",
+                  location.pathname === item.path && "bg-primary/10 text-primary"
+                )}
+                onClick={() => navigate(item.path)}
               >
-                Dashboard
+                {item.label}
               </Button>
+            ))}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="hidden md:flex hover:bg-primary/10 border-primary/20"
+              onClick={handleAddRecipe}
+            >
+              Submit Recipe
+            </Button>
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="hover:bg-primary/10"
+                  >
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button
-                variant="ghost"
-                className="text-sm font-medium hover:bg-primary/10"
+                variant="default"
+                className="bg-primary hover:bg-primary-600"
                 onClick={() => navigate("/login")}
               >
                 Sign In
@@ -76,62 +128,7 @@ export function Navigation() {
             )}
           </div>
         </div>
-      </header>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-primary/10 z-50">
-        <div className="max-w-md mx-auto flex justify-around p-2">
-          <Button 
-            variant="ghost" 
-            className={cn(
-              "flex-col gap-1 hover:bg-primary/10",
-              location.pathname === "/" && "text-primary"
-            )}
-            onClick={() => navigate("/")}
-          >
-            <Home className="w-5 h-5" />
-            <span className="text-xs">Home</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            className={cn(
-              "flex-col gap-1 hover:bg-primary/10",
-              location.pathname === "/community" && "text-primary"
-            )}
-            onClick={() => navigate("/community")}
-          >
-            <Users className="w-5 h-5" />
-            <span className="text-xs">Community</span>
-          </Button>
-          <Button
-            variant="ghost"
-            className={cn(
-              "flex-col gap-1 relative hover:bg-transparent",
-              location.pathname === "/submit" && "text-primary"
-            )}
-            onClick={handleAddRecipe}
-          >
-            <div className="absolute -top-6 bg-primary rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-              <Plus className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs mt-4">Add</span>
-          </Button>
-          <Button
-            variant="ghost"
-            className={cn(
-              "flex-col gap-1 hover:bg-primary/10",
-              location.pathname === "/dashboard" && "text-primary"
-            )}
-            onClick={() => navigate(user ? "/dashboard" : "/login")}
-          >
-            <User className="w-5 h-5" />
-            <span className="text-xs">{user ? "Profile" : "Sign In"}</span>
-          </Button>
-        </div>
-      </nav>
-
-      {/* Content Padding */}
-      <div className="pb-16 pt-20" />
-    </>
+      </div>
+    </header>
   );
 }
