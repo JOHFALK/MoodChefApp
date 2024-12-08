@@ -12,26 +12,80 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          badges: string[] | null
+          bio: string | null
           created_at: string
+          display_name: string | null
           id: string
+          reputation: number | null
           updated_at: string
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          badges?: string[] | null
+          bio?: string | null
           created_at?: string
+          display_name?: string | null
           id: string
+          reputation?: number | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          badges?: string[] | null
+          bio?: string | null
           created_at?: string
+          display_name?: string | null
           id?: string
+          reputation?: number | null
           updated_at?: string
           username?: string | null
         }
         Relationships: []
+      }
+      recipe_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          likes: number | null
+          recipe_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          likes?: number | null
+          recipe_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          likes?: number | null
+          recipe_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_comments_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recipe_interactions: {
         Row: {

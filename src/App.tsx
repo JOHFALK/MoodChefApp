@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Pricing from "./pages/Pricing";
 import Submit from "./pages/Submit";
+import Community from "./pages/Community";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/submit" element={<Submit />} />
+          <Route path="/community" element={<Community />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

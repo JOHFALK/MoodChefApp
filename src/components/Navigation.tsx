@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Search, Plus, User, ChefHat } from "lucide-react";
+import { Home, Search, Plus, User, ChefHat, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
@@ -96,12 +96,12 @@ export function Navigation() {
             variant="ghost" 
             className={cn(
               "flex-col gap-1 hover:bg-primary/10",
-              location.pathname === "/search" && "text-primary"
+              location.pathname === "/community" && "text-primary"
             )}
-            onClick={() => navigate("/search")}
+            onClick={() => navigate("/community")}
           >
-            <Search className="w-5 h-5" />
-            <span className="text-xs">Search</span>
+            <Users className="w-5 h-5" />
+            <span className="text-xs">Community</span>
           </Button>
           <Button
             variant="ghost"
