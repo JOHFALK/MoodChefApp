@@ -9,7 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      recipe_interactions: {
+        Row: {
+          created_at: string
+          emotions: string[]
+          id: string
+          notes: string | null
+          recipe_id: string
+          time_of_day: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emotions: string[]
+          id?: string
+          notes?: string | null
+          recipe_id: string
+          time_of_day: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emotions?: string[]
+          id?: string
+          notes?: string | null
+          recipe_id?: string
+          time_of_day?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_interactions_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          cooking_time: number | null
+          created_at: string
+          description: string | null
+          emotions: string[]
+          id: string
+          image_url: string | null
+          ingredients: string[]
+          instructions: string[]
+          title: string
+        }
+        Insert: {
+          cooking_time?: number | null
+          created_at?: string
+          description?: string | null
+          emotions: string[]
+          id?: string
+          image_url?: string | null
+          ingredients: string[]
+          instructions: string[]
+          title: string
+        }
+        Update: {
+          cooking_time?: number | null
+          created_at?: string
+          description?: string | null
+          emotions?: string[]
+          id?: string
+          image_url?: string | null
+          ingredients?: string[]
+          instructions?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

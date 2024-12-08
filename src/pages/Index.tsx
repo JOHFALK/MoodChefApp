@@ -1,14 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EmotionSelector } from "@/components/EmotionSelector";
 import { IngredientInput } from "@/components/IngredientInput";
 import { RecipeList } from "@/components/RecipeList";
 import { Button } from "@/components/ui/button";
 import { ChefHat } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [showRecipes, setShowRecipes] = useState(false);
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleEmotionSelect = (emotion: string) => {
     if (selectedEmotions.includes(emotion)) {
@@ -30,7 +48,15 @@ const Index = () => {
             <ChefHat className="w-8 h-8 text-primary" />
             <h1 className="text-2xl font-bold text-foreground">MoodChef</h1>
           </div>
-          <Button variant="outline">Sign In</Button>
+          {user ? (
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              Dashboard
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={() => navigate("/login")}>
+              Sign In
+            </Button>
+          )}
         </div>
       </header>
 
@@ -62,6 +88,6 @@ const Index = () => {
       </main>
     </div>
   );
-};
+}
 
 export default Index;
