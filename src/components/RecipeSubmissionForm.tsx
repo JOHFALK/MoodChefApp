@@ -1,30 +1,15 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "./ui/form";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
+import { Form } from "./ui/form";
 import { EmotionSelector } from "./EmotionSelector";
 import { IngredientInput } from "./IngredientInput";
 import { Loader2 } from "lucide-react";
-
-const recipeSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  cookingTime: z.number().min(1, "Cooking time must be at least 1 minute"),
-  instructions: z.string().min(20, "Instructions must be at least 20 characters"),
-});
+import { recipeSchema, type RecipeFormValues } from "./recipe-submission/schema";
+import { RecipeFormFields } from "./recipe-submission/RecipeFormFields";
 
 export function RecipeSubmissionForm() {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
@@ -32,7 +17,7 @@ export function RecipeSubmissionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof recipeSchema>>({
+  const form = useForm<RecipeFormValues>({
     resolver: zodResolver(recipeSchema),
     defaultValues: {
       title: "",
@@ -42,7 +27,7 @@ export function RecipeSubmissionForm() {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof recipeSchema>) => {
+  const onSubmit = async (values: RecipeFormValues) => {
     if (selectedEmotions.length === 0) {
       toast({
         title: "Emotions required",
@@ -89,11 +74,11 @@ export function RecipeSubmissionForm() {
       form.reset();
       setSelectedEmotions([]);
       setIngredients([]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting recipe:", error);
       toast({
         title: "Error",
-        description: "Failed to submit recipe. Please try again.",
+        description: error.message || "Failed to submit recipe. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -106,54 +91,7 @@ export function RecipeSubmissionForm() {
       <h2 className="text-2xl font-semibold mb-6">Submit a New Recipe</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Recipe Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter recipe title" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Briefly describe your recipe"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="cookingTime"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cooking Time (minutes)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <RecipeFormFields form={form} />
 
           <div className="space-y-4">
             <FormLabel>Recipe Emotions</FormLabel>
@@ -176,24 +114,6 @@ export function RecipeSubmissionForm() {
               onIngredientsChange={setIngredients}
             />
           </div>
-
-          <FormField
-            control={form.control}
-            name="instructions"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cooking Instructions</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter step-by-step instructions (one step per line)"
-                    className="min-h-[200px]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <Button
             type="submit"
