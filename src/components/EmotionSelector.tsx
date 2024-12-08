@@ -5,7 +5,7 @@ import {
   PartyPopper, Target, Flame, Shield, AlertCircle 
 } from "lucide-react";
 import { useToast } from "./ui/use-toast";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface EmotionOption {
   name: string;
