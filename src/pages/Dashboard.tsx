@@ -4,25 +4,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ChefHat } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { CookingPatternChart } from "@/components/CookingPatternChart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [recentRecipes, setRecentRecipes] = useState<any[]>([]);
 
   useEffect(() => {
-    // Check authentication status
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         navigate("/login");
       } else {
         setUser(session.user);
-        setLoading(false);
+        fetchRecentActivity(session.user.id);
       }
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -33,6 +34,30 @@ export default function Dashboard() {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const fetchRecentActivity = async (userId: string) => {
+    try {
+      const { data: interactions, error } = await supabase
+        .from("recipe_interactions")
+        .select(`
+          *,
+          recipes (
+            title,
+            emotions
+          )
+        `)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      setRecentRecipes(interactions || []);
+    } catch (error) {
+      console.error("Error fetching recent activity:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -74,15 +99,61 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="container py-8">
-        <h2 className="text-3xl font-bold mb-8">Your Cooking Journey</h2>
+      <main className="container py-8 space-y-8">
         <div className="grid gap-6">
-          <div className="p-6 bg-card rounded-lg shadow">
-            <h3 className="text-xl font-semibold mb-4">Recent Activity</h3>
-            <p className="text-muted-foreground">
-              Start cooking to see your activity here!
-            </p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Cooking Patterns</CardTitle>
+              <CardDescription>
+                See when you cook most frequently
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CookingPatternChart />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Your latest cooking adventures
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {recentRecipes.length > 0 ? (
+                <div className="space-y-4">
+                  {recentRecipes.map((interaction) => (
+                    <div
+                      key={interaction.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div>
+                        <h3 className="font-medium">{interaction.recipes.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Cooked during the {interaction.time_of_day}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {interaction.recipes.emotions.map((emotion: string) => (
+                          <span
+                            key={emotion}
+                            className="px-2 py-1 text-xs bg-primary/10 rounded-full"
+                          >
+                            {emotion}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">
+                  Start cooking to see your activity here!
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

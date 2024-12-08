@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users } from "lucide-react";
+import { RecipeInteractionForm } from "./RecipeInteractionForm";
+import { Button } from "./ui/button";
 
 interface Recipe {
   id: string;
@@ -17,6 +20,8 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
+  const [showInteractionForm, setShowInteractionForm] = useState(false);
+
   return (
     <Card className="w-full transition-all hover:shadow-lg">
       <CardHeader>
@@ -29,8 +34,8 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           ))}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground mb-4">{recipe.description}</p>
+      <CardContent className="space-y-4">
+        <p className="text-muted-foreground">{recipe.description}</p>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Clock className="w-4 h-4" />
@@ -41,6 +46,21 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             <span>{recipe.servings} servings</span>
           </div>
         </div>
+        
+        {showInteractionForm ? (
+          <RecipeInteractionForm 
+            recipeId={recipe.id}
+            onSuccess={() => setShowInteractionForm(false)}
+          />
+        ) : (
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => setShowInteractionForm(true)}
+          >
+            I Cooked This!
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
