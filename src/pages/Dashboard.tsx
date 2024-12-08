@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { ChefHat, Calendar, Clock, TrendingUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { CookingPatternChart } from "@/components/CookingPatternChart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { StatCards } from "@/components/dashboard/StatCards";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { Navigation } from "@/components/Navigation";
 
 interface CookingSummary {
   totalRecipes: number;
@@ -51,31 +53,23 @@ export default function Dashboard() {
     try {
       const { data: interactions } = await supabase
         .from("recipe_interactions")
-        .select(`
-          time_of_day,
-          emotions
-        `)
+        .select(`time_of_day, emotions`)
         .eq("user_id", userId);
 
       if (interactions) {
-        // Calculate total recipes
         const totalRecipes = interactions.length;
-
-        // Calculate favorite time of day
         const timeCount: Record<string, number> = {};
+        const emotionCount: Record<string, number> = {};
+
         interactions.forEach(i => {
           timeCount[i.time_of_day] = (timeCount[i.time_of_day] || 0) + 1;
-        });
-        const favoriteTimeOfDay = Object.entries(timeCount)
-          .sort(([,a], [,b]) => b - a)[0]?.[0] || '';
-
-        // Calculate most cooked emotion
-        const emotionCount: Record<string, number> = {};
-        interactions.forEach(i => {
           i.emotions.forEach((emotion: string) => {
             emotionCount[emotion] = (emotionCount[emotion] || 0) + 1;
           });
         });
+
+        const favoriteTimeOfDay = Object.entries(timeCount)
+          .sort(([,a], [,b]) => b - a)[0]?.[0] || '';
         const mostCookedEmotion = Object.entries(emotionCount)
           .sort(([,a], [,b]) => b - a)[0]?.[0] || '';
 
@@ -141,56 +135,14 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="py-6 px-4 border-b">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ChefHat className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">MoodChef</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-muted-foreground">
-              Welcome, {user?.email}
-            </span>
-            <Button variant="outline" onClick={handleSignOut}>
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
+      <DashboardHeader userEmail={user?.email} onSignOut={handleSignOut} />
+      <Navigation />
+      
       <main className="container py-8 space-y-8">
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Recipes Cooked</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalRecipes}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Favorite Time to Cook</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold capitalize">{summary.favoriteTimeOfDay}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Most Common Mood</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.mostCookedEmotion}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatCards summary={summary} />
 
         <div className="grid gap-6">
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle>Your Cooking Patterns</CardTitle>
               <CardDescription>
@@ -202,52 +154,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>
-                Your latest cooking adventures
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {recentRecipes.length > 0 ? (
-                <div className="space-y-4">
-                  {recentRecipes.map((interaction) => (
-                    <div
-                      key={interaction.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <h3 className="font-medium">{interaction.recipes.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Cooked during the {interaction.time_of_day}
-                        </p>
-                        {interaction.notes && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Note: {interaction.notes}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        {interaction.recipes.emotions.map((emotion: string) => (
-                          <span
-                            key={emotion}
-                            className="px-2 py-1 text-xs bg-primary/10 rounded-full"
-                          >
-                            {emotion}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground">
-                  Start cooking to see your activity here!
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <RecentActivity recentRecipes={recentRecipes} />
         </div>
       </main>
     </div>
