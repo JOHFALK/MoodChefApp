@@ -5,27 +5,101 @@ import {
   PartyPopper, Target, Flame, Shield, AlertCircle 
 } from "lucide-react";
 import { useToast } from "./ui/use-toast";
+import { motion } from "framer-motion";
 
 interface EmotionOption {
   name: string;
   icon: React.ReactNode;
   color: string;
   description: string;
+  bgColor: string;
 }
 
 const emotions: EmotionOption[] = [
-  { name: "Happy", icon: <Smile className="w-6 h-6" />, color: "bg-yellow-100 hover:bg-yellow-200", description: "Joyful and content" },
-  { name: "Sad", icon: <Frown className="w-6 h-6" />, color: "bg-blue-100 hover:bg-blue-200", description: "Down or melancholic" },
-  { name: "Energetic", icon: <Zap className="w-6 h-6" />, color: "bg-orange-100 hover:bg-orange-200", description: "Full of vigor" },
-  { name: "Calm", icon: <Heart className="w-6 h-6" />, color: "bg-green-100 hover:bg-green-200", description: "Peaceful and serene" },
-  { name: "Tired", icon: <Battery className="w-6 h-6" />, color: "bg-purple-100 hover:bg-purple-200", description: "Low energy" },
-  { name: "Anxious", icon: <Brain className="w-6 h-6" />, color: "bg-red-100 hover:bg-red-200", description: "Worried or uneasy" },
-  { name: "Excited", icon: <PartyPopper className="w-6 h-6" />, color: "bg-pink-100 hover:bg-pink-200", description: "Enthusiastic" },
-  { name: "Bored", icon: <Coffee className="w-6 h-6" />, color: "bg-gray-100 hover:bg-gray-200", description: "Lacking interest" },
-  { name: "Motivated", icon: <Target className="w-6 h-6" />, color: "bg-indigo-100 hover:bg-indigo-200", description: "Driven to achieve" },
-  { name: "Angry", icon: <Flame className="w-6 h-6" />, color: "bg-red-200 hover:bg-red-300", description: "Frustrated or upset" },
-  { name: "Confident", icon: <Shield className="w-6 h-6" />, color: "bg-emerald-100 hover:bg-emerald-200", description: "Self-assured" },
-  { name: "Stressed", icon: <AlertCircle className="w-6 h-6" />, color: "bg-amber-100 hover:bg-amber-200", description: "Under pressure" },
+  { 
+    name: "Happy", 
+    icon: <Smile className="w-6 h-6" />, 
+    color: "text-mood-happy",
+    bgColor: "bg-mood-happy/10",
+    description: "Joyful and content" 
+  },
+  { 
+    name: "Sad", 
+    icon: <Frown className="w-6 h-6" />, 
+    color: "text-mood-sad",
+    bgColor: "bg-mood-sad/10",
+    description: "Down or melancholic" 
+  },
+  { 
+    name: "Energetic", 
+    icon: <Zap className="w-6 h-6" />, 
+    color: "text-mood-energetic",
+    bgColor: "bg-mood-energetic/10",
+    description: "Full of vigor" 
+  },
+  { 
+    name: "Calm", 
+    icon: <Heart className="w-6 h-6" />, 
+    color: "text-mood-calm",
+    bgColor: "bg-mood-calm/10",
+    description: "Peaceful and serene" 
+  },
+  { 
+    name: "Tired", 
+    icon: <Battery className="w-6 h-6" />, 
+    color: "text-mood-tired",
+    bgColor: "bg-mood-tired/10",
+    description: "Low energy" 
+  },
+  { 
+    name: "Anxious", 
+    icon: <Brain className="w-6 h-6" />, 
+    color: "text-mood-anxious",
+    bgColor: "bg-mood-anxious/10",
+    description: "Worried or uneasy" 
+  },
+  { 
+    name: "Excited", 
+    icon: <PartyPopper className="w-6 h-6" />, 
+    color: "text-mood-excited",
+    bgColor: "bg-mood-excited/10",
+    description: "Enthusiastic" 
+  },
+  { 
+    name: "Bored", 
+    icon: <Coffee className="w-6 h-6" />, 
+    color: "text-mood-bored",
+    bgColor: "bg-mood-bored/10",
+    description: "Lacking interest" 
+  },
+  { 
+    name: "Motivated", 
+    icon: <Target className="w-6 h-6" />, 
+    color: "text-mood-motivated",
+    bgColor: "bg-mood-motivated/10",
+    description: "Driven to achieve" 
+  },
+  { 
+    name: "Angry", 
+    icon: <Flame className="w-6 h-6" />, 
+    color: "text-mood-angry",
+    bgColor: "bg-mood-angry/10",
+    description: "Frustrated or upset" 
+  },
+  { 
+    name: "Confident", 
+    icon: <Shield className="w-6 h-6" />, 
+    color: "text-mood-confident",
+    bgColor: "bg-mood-confident/10",
+    description: "Self-assured" 
+  },
+  { 
+    name: "Stressed", 
+    icon: <AlertCircle className="w-6 h-6" />, 
+    color: "text-mood-stressed",
+    bgColor: "bg-mood-stressed/10",
+    description: "Under pressure" 
+  },
 ];
 
 interface EmotionSelectorProps {
@@ -53,32 +127,56 @@ export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSe
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="text-center space-y-4 mb-8">
-        <h2 className="text-3xl font-semibold text-foreground">How are you feeling today?</h2>
-        <p className="text-muted-foreground">
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-3xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+        >
+          How are you feeling today?
+        </motion.h2>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-muted-foreground"
+        >
           Select up to 2 emotions to find recipes that match your mood
-        </p>
+        </motion.p>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-        {emotions.map((emotion) => (
-          <Button
+        {emotions.map((emotion, index) => (
+          <motion.div
             key={emotion.name}
-            variant="outline"
-            className={cn(
-              "h-24 flex flex-col items-center justify-center gap-2 transition-all",
-              emotion.color,
-              selectedEmotions.includes(emotion.name) && "ring-2 ring-primary",
-            )}
-            onClick={() => handleEmotionSelect(emotion.name)}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
           >
-            {emotion.icon}
-            <span className="text-sm font-medium">{emotion.name}</span>
-          </Button>
+            <Button
+              variant="outline"
+              className={cn(
+                "h-24 w-full flex flex-col items-center justify-center gap-2 transition-all duration-300",
+                emotion.bgColor,
+                emotion.color,
+                selectedEmotions.includes(emotion.name) && 
+                "ring-2 ring-primary shadow-lg scale-105",
+                "hover:scale-105 hover:shadow-md"
+              )}
+              onClick={() => handleEmotionSelect(emotion.name)}
+            >
+              {emotion.icon}
+              <span className="text-sm font-medium">{emotion.name}</span>
+            </Button>
+          </motion.div>
         ))}
       </div>
       {selectedEmotions.length > 0 && (
-        <div className="mt-6 text-center text-sm text-muted-foreground">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-6 text-center text-sm text-muted-foreground"
+        >
           Selected emotions: {selectedEmotions.join(" + ")}
-        </div>
+        </motion.div>
       )}
     </div>
   );

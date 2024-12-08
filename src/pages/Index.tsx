@@ -4,11 +4,12 @@ import { IngredientInput } from "@/components/IngredientInput";
 import { RecipeList } from "@/components/RecipeList";
 import { RecipeSubmissionForm } from "@/components/RecipeSubmissionForm";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Plus } from "lucide-react";
+import { ChefHat, Plus, Home, Search, User, Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useToast } from "@/components/ui/use-toast";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Index = () => {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
@@ -67,36 +68,58 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="py-6 px-4 border-b">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-background relative pb-16">
+      {/* Header with slide-out menu */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
+        <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <ChefHat className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">MoodChef</h1>
+            <ChefHat className="w-8 h-8 text-primary animate-float" />
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              MoodChef
+            </h1>
           </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={handleSubmitRecipe}
-              className="hidden sm:flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Submit Recipe
-            </Button>
-            {user ? (
-              <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                Dashboard
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="w-5 h-5" />
               </Button>
-            ) : (
-              <Button variant="outline" onClick={() => navigate("/login")}>
-                Sign In
-              </Button>
-            )}
-          </div>
+            </SheetTrigger>
+            <SheetContent>
+              <div className="space-y-4 mt-8">
+                {user ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => navigate("/dashboard")}
+                    >
+                      Dashboard
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleSubmitRecipe}
+                    >
+                      Submit Recipe
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigate("/login")}
+                  >
+                    Sign In
+                  </Button>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
-      <main className="container py-8 space-y-8">
+      {/* Main Content */}
+      <main className="container pt-20 pb-8 space-y-8 max-w-5xl mx-auto px-4">
         {showSubmissionForm ? (
           <>
             <Button
@@ -121,7 +144,7 @@ const Index = () => {
             <div className="flex justify-center">
               <Button
                 size="lg"
-                className="bg-primary text-white hover:bg-primary/90"
+                className="bg-primary text-white hover:bg-primary-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 disabled={selectedEmotions.length === 0}
                 onClick={() => setShowRecipes(true)}
               >
@@ -137,6 +160,38 @@ const Index = () => {
           </>
         )}
       </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t z-50">
+        <div className="max-w-md mx-auto flex justify-around p-2">
+          <Button variant="ghost" className="flex-col gap-1" onClick={() => setShowSubmissionForm(false)}>
+            <Home className="w-5 h-5" />
+            <span className="text-xs">Home</span>
+          </Button>
+          <Button variant="ghost" className="flex-col gap-1" onClick={() => setShowRecipes(true)}>
+            <Search className="w-5 h-5" />
+            <span className="text-xs">Search</span>
+          </Button>
+          <Button
+            variant="ghost"
+            className="flex-col gap-1 relative"
+            onClick={handleSubmitRecipe}
+          >
+            <div className="absolute -top-6 bg-primary rounded-full p-3 shadow-lg">
+              <Plus className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xs mt-4">Add</span>
+          </Button>
+          <Button
+            variant="ghost"
+            className="flex-col gap-1"
+            onClick={() => navigate(user ? "/dashboard" : "/login")}
+          >
+            <User className="w-5 h-5" />
+            <span className="text-xs">{user ? "Profile" : "Sign In"}</span>
+          </Button>
+        </div>
+      </nav>
     </div>
   );
 };
