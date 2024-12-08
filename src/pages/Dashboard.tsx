@@ -2,10 +2,16 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ChefHat } from "lucide-react";
+import { ChefHat, Calendar, Clock, TrendingUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { CookingPatternChart } from "@/components/CookingPatternChart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface CookingSummary {
+  totalRecipes: number;
+  favoriteTimeOfDay: string;
+  mostCookedEmotion: string;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -13,6 +19,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [recentRecipes, setRecentRecipes] = useState<any[]>([]);
+  const [summary, setSummary] = useState<CookingSummary>({
+    totalRecipes: 0,
+    favoriteTimeOfDay: '',
+    mostCookedEmotion: '',
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -21,6 +32,7 @@ export default function Dashboard() {
       } else {
         setUser(session.user);
         fetchRecentActivity(session.user.id);
+        fetchCookingSummary(session.user.id);
       }
     });
 
@@ -34,6 +46,49 @@ export default function Dashboard() {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const fetchCookingSummary = async (userId: string) => {
+    try {
+      const { data: interactions } = await supabase
+        .from("recipe_interactions")
+        .select(`
+          time_of_day,
+          emotions
+        `)
+        .eq("user_id", userId);
+
+      if (interactions) {
+        // Calculate total recipes
+        const totalRecipes = interactions.length;
+
+        // Calculate favorite time of day
+        const timeCount: Record<string, number> = {};
+        interactions.forEach(i => {
+          timeCount[i.time_of_day] = (timeCount[i.time_of_day] || 0) + 1;
+        });
+        const favoriteTimeOfDay = Object.entries(timeCount)
+          .sort(([,a], [,b]) => b - a)[0]?.[0] || '';
+
+        // Calculate most cooked emotion
+        const emotionCount: Record<string, number> = {};
+        interactions.forEach(i => {
+          i.emotions.forEach((emotion: string) => {
+            emotionCount[emotion] = (emotionCount[emotion] || 0) + 1;
+          });
+        });
+        const mostCookedEmotion = Object.entries(emotionCount)
+          .sort(([,a], [,b]) => b - a)[0]?.[0] || '';
+
+        setSummary({
+          totalRecipes,
+          favoriteTimeOfDay,
+          mostCookedEmotion,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching cooking summary:", error);
+    }
+  };
 
   const fetchRecentActivity = async (userId: string) => {
     try {
@@ -77,7 +132,11 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
@@ -100,6 +159,36 @@ export default function Dashboard() {
       </header>
 
       <main className="container py-8 space-y-8">
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Recipes Cooked</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary.totalRecipes}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Favorite Time to Cook</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold capitalize">{summary.favoriteTimeOfDay}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Most Common Mood</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary.mostCookedEmotion}</div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="grid gap-6">
           <Card>
             <CardHeader>
@@ -133,6 +222,11 @@ export default function Dashboard() {
                         <p className="text-sm text-muted-foreground">
                           Cooked during the {interaction.time_of_day}
                         </p>
+                        {interaction.notes && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Note: {interaction.notes}
+                          </p>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         {interaction.recipes.emotions.map((emotion: string) => (
