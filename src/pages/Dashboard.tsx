@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { Navigation } from "@/components/Navigation";
+import { AdminControls } from "@/components/dashboard/AdminControls";
+import { motion } from "framer-motion";
 
 interface CookingSummary {
   totalRecipes: number;
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [recentRecipes, setRecentRecipes] = useState<any[]>([]);
   const [summary, setSummary] = useState<CookingSummary>({
     totalRecipes: 0,
@@ -33,6 +35,7 @@ export default function Dashboard() {
         navigate("/login");
       } else {
         setUser(session.user);
+        checkAdminStatus(session.user.id);
         fetchRecentActivity(session.user.id);
         fetchCookingSummary(session.user.id);
       }
@@ -48,6 +51,16 @@ export default function Dashboard() {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const checkAdminStatus = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+    
+    setIsAdmin(profile?.is_admin || false);
+  };
 
   const fetchCookingSummary = async (userId: string) => {
     try {
@@ -134,27 +147,54 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
       <DashboardHeader userEmail={user?.email} onSignOut={handleSignOut} />
-      <Navigation />
       
       <main className="container py-8 space-y-8">
-        <StatCards summary={summary} />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <StatCards summary={summary} />
+        </motion.div>
 
-        <div className="grid gap-6">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle>Your Cooking Patterns</CardTitle>
-              <CardDescription>
-                See when you cook most frequently
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CookingPatternChart />
-            </CardContent>
-          </Card>
+        {isAdmin && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <AdminControls />
+          </motion.div>
+        )}
 
-          <RecentActivity recentRecipes={recentRecipes} />
+        <div className="grid gap-6 md:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Card className="hover:shadow-lg transition-shadow bg-white/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Your Cooking Patterns</CardTitle>
+                <CardDescription>
+                  See when you cook most frequently
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CookingPatternChart />
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <RecentActivity recentRecipes={recentRecipes} />
+          </motion.div>
         </div>
       </main>
     </div>

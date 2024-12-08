@@ -1,5 +1,5 @@
 import { Calendar, Clock, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
 interface CookingSummary {
@@ -13,63 +13,54 @@ interface StatCardsProps {
 }
 
 export function StatCards({ summary }: StatCardsProps) {
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
+  const cards = [
+    {
+      title: "Total Recipes Cooked",
+      value: summary.totalRecipes,
+      icon: Calendar,
+      color: "from-primary-400/20 to-primary-600/20",
+      textColor: "text-primary-700",
+    },
+    {
+      title: "Favorite Time to Cook",
+      value: summary.favoriteTimeOfDay,
+      icon: Clock,
+      color: "from-secondary-400/20 to-secondary-600/20",
+      textColor: "text-secondary-800",
+    },
+    {
+      title: "Most Common Mood",
+      value: summary.mostCookedEmotion,
+      icon: TrendingUp,
+      color: "from-accent/20 to-accent/30",
+      textColor: "text-accent",
+    },
+  ];
 
   return (
-    <motion.div 
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="grid gap-6 md:grid-cols-3"
-    >
-      <motion.div variants={item}>
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Recipes Cooked</CardTitle>
-            <Calendar className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary.totalRecipes}</div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      <motion.div variants={item}>
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Favorite Time to Cook</CardTitle>
-            <Clock className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold capitalize">{summary.favoriteTimeOfDay}</div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      <motion.div variants={item}>
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Most Common Mood</CardTitle>
-            <TrendingUp className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary.mostCookedEmotion}</div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </motion.div>
+    <div className="grid gap-4 md:grid-cols-3">
+      {cards.map((card, index) => (
+        <motion.div
+          key={card.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.1 }}
+        >
+          <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br border-0 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <card.icon className={`w-8 h-8 ${card.textColor}`} />
+                <div className={`text-2xl font-bold ${card.textColor}`}>
+                  {typeof card.value === 'number' ? card.value.toLocaleString() : card.value}
+                </div>
+              </div>
+              <div className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
+    </div>
   );
 }
