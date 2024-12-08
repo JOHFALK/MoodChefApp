@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
 } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, TooltipProps } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CookingPattern {
   time_of_day: string;
   count: number;
 }
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <span className="font-medium">{label}:</span>
+          <span className="font-medium">{payload[0].value} recipes</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 export function CookingPatternChart() {
   const [data, setData] = useState<CookingPattern[]>([]);
@@ -54,10 +66,8 @@ export function CookingPatternChart() {
           <BarChart data={data}>
             <XAxis dataKey="time_of_day" />
             <YAxis />
+            <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="count" fill="var(--color-bar)" />
-            <ChartTooltip>
-              <ChartTooltipContent />
-            </ChartTooltip>
           </BarChart>
         </ResponsiveContainer>
       </ChartContainer>
