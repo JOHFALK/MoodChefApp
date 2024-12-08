@@ -37,7 +37,7 @@ export function Navigation() {
       navigate("/login");
       return;
     }
-    // Handle recipe submission logic
+    navigate("/submit");
   };
 
   return (
@@ -105,7 +105,10 @@ export function Navigation() {
           </Button>
           <Button
             variant="ghost"
-            className="flex-col gap-1 relative hover:bg-transparent"
+            className={cn(
+              "flex-col gap-1 relative hover:bg-transparent",
+              location.pathname === "/submit" && "text-primary"
+            )}
             onClick={handleAddRecipe}
           >
             <div className="absolute -top-6 bg-primary rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
