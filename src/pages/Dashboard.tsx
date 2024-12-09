@@ -7,6 +7,7 @@ import { StatCards } from "@/components/dashboard/StatCards";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { AdminControls } from "@/components/dashboard/AdminControls";
 import { BattleManager } from "@/components/dashboard/BattleManager";
+import { UserManagement } from "@/components/dashboard/UserManagement";
 import { MoodAnalytics } from "@/components/dashboard/MoodAnalytics";
 import { motion } from "framer-motion";
 
@@ -169,6 +170,14 @@ export default function Dashboard() {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <BattleManager />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <UserManagement />
             </motion.div>
           </>
         )}
