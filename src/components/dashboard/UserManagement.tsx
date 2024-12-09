@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { UserSearch } from "./UserSearch";
 import { UserList } from "./UserList";
+import { User } from "@supabase/supabase-js";
 
 export function UserManagement() {
   const { toast } = useToast();
@@ -33,7 +34,7 @@ export function UserManagement() {
           const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
           if (authError) throw authError;
           
-          const matchingUserIds = authUsers
+          const matchingUserIds = (authUsers as User[])
             .filter(user => user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
             .map(user => user.id);
           
