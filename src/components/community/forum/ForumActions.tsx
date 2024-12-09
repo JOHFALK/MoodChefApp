@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Flame, Clock, ThumbsUp } from "lucide-react";
+import { motion } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,36 +15,45 @@ interface ForumActionsProps {
 
 export function ForumActions({ sortBy, setSortBy }: ForumActionsProps) {
   return (
-    <div className="flex gap-2 flex-wrap justify-center md:justify-end">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
+      className="flex gap-2 flex-wrap justify-center md:justify-end"
+    >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2">
-            {sortBy === "trending" && <Flame className="h-4 w-4" />}
-            {sortBy === "latest" && <Clock className="h-4 w-4" />}
-            {sortBy === "popular" && <ThumbsUp className="h-4 w-4" />}
+          <Button variant="outline" size="sm" className="gap-2 border-primary/20 hover:border-primary">
+            {sortBy === "trending" && <Flame className="h-4 w-4 text-primary" />}
+            {sortBy === "latest" && <Clock className="h-4 w-4 text-primary" />}
+            {sortBy === "popular" && <ThumbsUp className="h-4 w-4 text-primary" />}
             Sort by: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => setSortBy("trending")}>
-            <Flame className="h-4 w-4 mr-2" />
+        <DropdownMenuContent className="glass-card">
+          <DropdownMenuItem onClick={() => setSortBy("trending")} className="gap-2">
+            <Flame className="h-4 w-4" />
             Trending
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setSortBy("latest")}>
-            <Clock className="h-4 w-4 mr-2" />
+          <DropdownMenuItem onClick={() => setSortBy("latest")} className="gap-2">
+            <Clock className="h-4 w-4" />
             Latest
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setSortBy("popular")}>
-            <ThumbsUp className="h-4 w-4 mr-2" />
+          <DropdownMenuItem onClick={() => setSortBy("popular")} className="gap-2">
+            <ThumbsUp className="h-4 w-4" />
             Popular
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Button variant="outline" size="sm" className="gap-2">
-        <MessageSquare className="h-4 w-4" />
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="gap-2 border-primary/20 hover:border-primary group"
+      >
+        <MessageSquare className="h-4 w-4 group-hover:text-primary transition-colors" />
         New Topic
       </Button>
-    </div>
+    </motion.div>
   );
 }
