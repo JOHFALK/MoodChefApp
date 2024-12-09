@@ -8,6 +8,30 @@ import { MessageSquare, ThumbsUp, Crown } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 
+interface TopicProfile {
+  username: string;
+  avatar_url: string | null;
+}
+
+interface TopicReply {
+  id: string;
+  content: string;
+  created_at: string;
+  profiles: TopicProfile;
+}
+
+interface TopicData {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  forum_category: {
+    is_premium: boolean;
+  } | null;
+  profiles: TopicProfile;
+  forum_replies: TopicReply[];
+}
+
 export function Topic() {
   const { topicId } = useParams();
 
@@ -18,17 +42,20 @@ export function Topic() {
         .from("forum_topics")
         .select(`
           *,
-          profiles:user_id (username, avatar_url),
-          forum_replies (
-            *,
-            profiles:user_id (username, avatar_url)
+          forum_category:category_id(is_premium),
+          profiles:user_id(username, avatar_url),
+          forum_replies(
+            id,
+            content,
+            created_at,
+            profiles:user_id(username, avatar_url)
           )
         `)
         .eq("id", topicId)
         .single();
 
       if (error) throw error;
-      return data;
+      return data as TopicData;
     },
   });
 
@@ -49,7 +76,7 @@ export function Topic() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,14 +85,14 @@ export function Topic() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-2xl">{topic.title}</CardTitle>
-              {topic.category?.is_premium && (
+              {topic.forum_category?.is_premium && (
                 <Crown className="h-5 w-5 text-yellow-500" />
               )}
             </div>
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={topic.profiles?.avatar_url} />
+                  <AvatarImage src={topic.profiles?.avatar_url || undefined} />
                   <AvatarFallback>{topic.profiles?.username?.[0]}</AvatarFallback>
                 </Avatar>
                 <span>{topic.profiles?.username}</span>
@@ -93,7 +120,7 @@ export function Topic() {
       </motion.div>
 
       <div className="space-y-4">
-        {topic.forum_replies?.map((reply: any) => (
+        {topic.forum_replies?.map((reply) => (
           <motion.div
             key={reply.id}
             initial={{ opacity: 0, y: 20 }}
@@ -103,7 +130,7 @@ export function Topic() {
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-4 mb-4">
                   <Avatar>
-                    <AvatarImage src={reply.profiles?.avatar_url} />
+                    <AvatarImage src={reply.profiles?.avatar_url || undefined} />
                     <AvatarFallback>{reply.profiles?.username?.[0]}</AvatarFallback>
                   </Avatar>
                   <div>
