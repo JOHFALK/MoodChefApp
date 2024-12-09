@@ -4,12 +4,13 @@ import { IngredientInput } from "@/components/IngredientInput";
 import { RecipeList } from "@/components/RecipeList";
 import { RecipeSubmissionForm } from "@/components/RecipeSubmissionForm";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Trophy, Users, ChefHat } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useToast } from "@/components/ui/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const Index = () => {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
@@ -140,6 +141,68 @@ const Index = () => {
                   />
                 </motion.div>
               )}
+
+              {/* Features Section */}
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="pt-20 border-t"
+              >
+                <h2 className="text-3xl font-bold text-center mb-12">Discover More Features</h2>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <Card className="group hover:shadow-lg transition-all duration-300">
+                    <CardHeader>
+                      <Trophy className="w-8 h-8 text-primary mb-2 group-hover:scale-110 transition-transform" />
+                      <CardTitle>Recipe Battles</CardTitle>
+                      <CardDescription>Compete with other chefs in themed cooking challenges</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => navigate("/community")}
+                      >
+                        Join a Battle
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="group hover:shadow-lg transition-all duration-300">
+                    <CardHeader>
+                      <Users className="w-8 h-8 text-primary mb-2 group-hover:scale-110 transition-transform" />
+                      <CardTitle>Community</CardTitle>
+                      <CardDescription>Share stories and connect with fellow food enthusiasts</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => navigate("/community")}
+                      >
+                        Join Community
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="group hover:shadow-lg transition-all duration-300">
+                    <CardHeader>
+                      <ChefHat className="w-8 h-8 text-primary mb-2 group-hover:scale-110 transition-transform" />
+                      <CardTitle>Share Recipes</CardTitle>
+                      <CardDescription>Contribute your own mood-enhancing recipes</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={handleSubmitRecipe}
+                      >
+                        Submit Recipe
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.section>
             </motion.div>
           )}
         </AnimatePresence>

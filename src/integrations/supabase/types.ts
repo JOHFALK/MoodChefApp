@@ -65,6 +65,7 @@ export type Database = {
           id: string
           image_url: string | null
           likes: number | null
+          post_type: string
           title: string
           type: string
           user_id: string
@@ -75,6 +76,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           likes?: number | null
+          post_type?: string
           title: string
           type: string
           user_id: string
@@ -85,6 +87,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           likes?: number | null
+          post_type?: string
           title?: string
           type?: string
           user_id?: string

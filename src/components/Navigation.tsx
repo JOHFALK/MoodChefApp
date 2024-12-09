@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Menu } from "lucide-react";
+import { ChefHat, Menu, Trophy, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
@@ -49,7 +49,18 @@ export function Navigation() {
 
   const navItems = [
     { label: "Explore", path: "/" },
-    { label: "Community", path: "/community" },
+    { 
+      label: "Community", 
+      path: "/community",
+      icon: Users,
+      description: "Share stories & photos"
+    },
+    { 
+      label: "Battles", 
+      path: "/community?tab=battles",
+      icon: Trophy,
+      description: "Join cooking challenges"
+    },
     { label: "Pricing", path: "/pricing" },
   ];
 
@@ -82,6 +93,7 @@ export function Navigation() {
                 )}
                 onClick={() => navigate(item.path)}
               >
+                {item.icon && <item.icon className="w-4 h-4 mr-2" />}
                 {item.label}
               </Button>
             ))}
@@ -94,6 +106,7 @@ export function Navigation() {
               className="hidden md:flex hover:bg-primary/10 border-primary/20"
               onClick={handleAddRecipe}
             >
+              <ChefHat className="w-4 h-4 mr-2" />
               Submit Recipe
             </Button>
 
