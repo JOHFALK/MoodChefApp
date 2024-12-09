@@ -1,4 +1,4 @@
-import { Tables, TablesInsert, TablesUpdate, Enums } from './tables';
+import type { Tables, TablesInsert, TablesUpdate } from './tables';
 
 export type Database = {
   public: {
@@ -16,7 +16,7 @@ export type Database = {
       [_ in never]: never;
     };
     Enums: {
-      [K in keyof Enums]: Enums[K];
+      [_ in never]: never;
     };
     CompositeTypes: {
       [_ in never]: never;

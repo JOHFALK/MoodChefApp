@@ -10,6 +10,20 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+interface ChefProfile {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+}
+
+interface BattleSubmission {
+  votes: number;
+  user: ChefProfile;
+  recipe: {
+    title: string;
+  };
+}
+
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -33,14 +47,14 @@ export function BattleLeaderboard() {
         .from('battle_submissions')
         .select(`
           votes,
-          user:profiles(id, username, avatar_url),
-          recipe:recipes(title)
+          user:profiles!inner(id, username, avatar_url),
+          recipe:recipes!inner(title)
         `)
         .order('votes', { ascending: false })
         .limit(5);
 
       if (error) throw error;
-      return data;
+      return data as BattleSubmission[];
     },
   });
 
@@ -83,8 +97,8 @@ export function BattleLeaderboard() {
               </div>
               
               <Avatar className="border-2 border-primary/20">
-                <AvatarImage src={submission.user.avatar_url} />
-                <AvatarFallback className="bg-primary/10">
+                <AvatarImage src={submission.user.avatar_url || undefined} />
+                <AvatarFallback>
                   {submission.user.username?.[0]?.toUpperCase() || "?"}
                 </AvatarFallback>
               </Avatar>

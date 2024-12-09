@@ -36,20 +36,14 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // Modified query to handle no votes
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('recipe_votes')
       .select('id')
       .eq('recipe_id', recipe.id)
-      .eq('user_id', session.user.id);
+      .eq('user_id', session.user.id)
+      .single();
 
-    if (error) {
-      console.error('Error checking vote:', error);
-      return;
-    }
-
-    // Check if there are any votes in the response
-    setHasVoted(data && data.length > 0);
+    setHasVoted(!!data);
   };
 
   const handleVote = async () => {
@@ -65,40 +59,33 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     try {
       if (hasVoted) {
         // Remove vote
-        const { error: deleteError } = await supabase
+        await supabase
           .from('recipe_votes')
           .delete()
           .eq('recipe_id', recipe.id)
           .eq('user_id', session.user.id);
 
-        if (deleteError) throw deleteError;
-
-        const { error: updateError } = await supabase
+        await supabase
           .from('recipes')
           .update({ votes: votes - 1 })
           .eq('id', recipe.id);
-
-        if (updateError) throw updateError;
 
         setVotes(prev => prev - 1);
         setHasVoted(false);
       } else {
         // Add vote
-        const { error: insertError } = await supabase
+        await supabase
           .from('recipe_votes')
           .insert({
             recipe_id: recipe.id,
             user_id: session.user.id,
+            created_at: new Date().toISOString()
           });
 
-        if (insertError) throw insertError;
-
-        const { error: updateError } = await supabase
+        await supabase
           .from('recipes')
           .update({ votes: votes + 1 })
           .eq('id', recipe.id);
-
-        if (updateError) throw updateError;
 
         setVotes(prev => prev + 1);
         setHasVoted(true);
