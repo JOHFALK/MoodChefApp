@@ -12,7 +12,6 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { UserSearch } from "./UserSearch";
 import { UserList } from "./UserList";
-import { User } from "@supabase/supabase-js";
 
 export function UserManagement() {
   const { toast } = useToast();
@@ -30,21 +29,11 @@ export function UserManagement() {
         .order("created_at", { ascending: false });
 
       if (searchQuery) {
-        if (searchType === "email") {
-          const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
-          if (authError) throw authError;
-          
-          const matchingUserIds = (authUsers as User[])
-            .filter(user => user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
-            .map(user => user.id);
-          
-          if (matchingUserIds.length > 0) {
-            query = query.in("id", matchingUserIds);
-          } else {
-            return [];
-          }
-        } else {
+        if (searchType === "username") {
           query = query.ilike("username", `%${searchQuery}%`);
+        } else {
+          // For email search, we'll use the display_name field which often contains the email
+          query = query.ilike("display_name", `%${searchQuery}%`);
         }
       }
 
