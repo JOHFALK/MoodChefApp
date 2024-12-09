@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { ChefHat, TrendingUp, Award } from "lucide-react";
+import { ChefHat, TrendingUp, Award, Search, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
 
 export function CommunityHeader() {
   const navigate = useNavigate();
@@ -18,17 +19,17 @@ export function CommunityHeader() {
         </div>
         <h1 className="text-4xl font-bold tracking-tight">Recipe Community</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Discover amazing recipes from our community of chefs. Vote for your favorites and share your own creations.
+          Join our vibrant community of food enthusiasts. Share recipes, discuss cooking techniques, and discover how food affects your mood.
         </p>
       </motion.div>
 
       <div className="flex flex-wrap justify-center gap-4">
         <Button
-          variant="outline"
+          variant="default"
           className="group"
           onClick={() => navigate("/submit")}
         >
-          <ChefHat className="w-4 h-4 mr-2 group-hover:text-primary transition-colors" />
+          <PlusCircle className="w-4 h-4 mr-2 group-hover:text-white transition-colors" />
           Share Recipe
         </Button>
         <Button variant="outline" className="group">

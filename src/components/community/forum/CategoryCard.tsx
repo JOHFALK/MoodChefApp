@@ -1,9 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Crown, PlusCircle, Users, ChevronRight } from "lucide-react";
+import { MessageSquare, Crown, PlusCircle, Users, ChevronRight, Eye, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CategoryCardProps {
   category: {
@@ -30,6 +32,13 @@ interface CategoryCardProps {
 export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
   const navigate = useNavigate();
 
+  const getTopicStats = (topic: CategoryCardProps["category"]["forum_topics"][0]) => {
+    return {
+      views: topic.views || 0,
+      replies: topic.forum_replies[0]?.count || 0,
+    };
+  };
+
   return (
     <motion.div layout>
       <Card className="hover:shadow-lg transition-shadow duration-300">
@@ -52,45 +61,69 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
               </div>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => onNewTopic(category.id, category.is_premium)}
-          >
-            <PlusCircle className="h-4 w-4" />
-            New Topic
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => onNewTopic(category.id, category.is_premium)}
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  New Topic
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{category.is_premium ? "Premium members only" : "Start a new discussion"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardHeader>
         <CardContent>
           <CardDescription className="mb-4">{category.description}</CardDescription>
           <div className="space-y-2">
-            {category.forum_topics?.slice(0, 3).map((topic) => (
-              <div
-                key={topic.id}
-                className="flex items-center justify-between p-2 rounded-lg hover:bg-accent/10 cursor-pointer group"
-                onClick={() => navigate(`/community/topic/${topic.id}`)}
-              >
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex flex-col">
-                    <span className="text-sm group-hover:text-primary transition-colors">
-                      {topic.title}
-                    </span>
-                    {topic.emotions?.length > 0 && (
-                      <div className="flex gap-1">
-                        {topic.emotions.map((emotion, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {emotion}
-                          </Badge>
-                        ))}
+            {category.forum_topics?.slice(0, 3).map((topic) => {
+              const stats = getTopicStats(topic);
+              return (
+                <motion.div
+                  key={topic.id}
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-accent/10 cursor-pointer group"
+                  onClick={() => navigate(`/community/topic/${topic.id}`)}
+                  whileHover={{ scale: 1.01 }}
+                >
+                  <div className="flex items-center space-x-2 flex-1">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <span className="text-sm group-hover:text-primary transition-colors truncate">
+                        {topic.title}
+                      </span>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span>{format(new Date(topic.created_at), 'MMM d')}</span>
+                        <div className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" />
+                          {stats.views}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="h-3 w-3" />
+                          {stats.replies}
+                        </div>
                       </div>
-                    )}
+                      {topic.emotions?.length > 0 && (
+                        <div className="flex gap-1 mt-1">
+                          {topic.emotions.map((emotion, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {emotion}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-            ))}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                </motion.div>
+              );
+            })}
           </div>
           {category.forum_topics?.length > 3 && (
             <Button

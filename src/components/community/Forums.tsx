@@ -5,11 +5,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryList } from "./forum/CategoryList";
+import { Input } from "@/components/ui/input";
+import { Search, TrendingUp, Clock, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function Forums() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ["forumCategories"],
@@ -46,11 +50,13 @@ export function Forums() {
       navigate("/pricing");
       return;
     }
-    toast({
-      title: "Coming Soon",
-      description: "New topic creation will be available soon!",
-    });
+    navigate(`/community/new-topic/${categoryId}`);
   };
+
+  const filteredCategories = categories?.filter(category => 
+    category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    category.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading) {
     return (
@@ -62,8 +68,34 @@ export function Forums() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search categories..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Trending
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Clock className="h-4 w-4" />
+            Latest
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Star className="h-4 w-4" />
+            Featured
+          </Button>
+        </div>
+      </div>
+
       <Tabs defaultValue="all" className="w-full" onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[600px] mx-auto">
           <TabsTrigger value="all">All Categories</TabsTrigger>
           <TabsTrigger value="emotion">Emotion-Based</TabsTrigger>
           <TabsTrigger value="interest">Interest-Based</TabsTrigger>
@@ -71,19 +103,19 @@ export function Forums() {
         </TabsList>
 
         <TabsContent value="all" className="mt-6">
-          <CategoryList categories={categories} onNewTopic={handleNewTopic} filter="all" />
+          <CategoryList categories={filteredCategories} onNewTopic={handleNewTopic} filter="all" />
         </TabsContent>
 
         <TabsContent value="emotion" className="mt-6">
-          <CategoryList categories={categories} onNewTopic={handleNewTopic} filter="emotion" />
+          <CategoryList categories={filteredCategories} onNewTopic={handleNewTopic} filter="emotion" />
         </TabsContent>
 
         <TabsContent value="interest" className="mt-6">
-          <CategoryList categories={categories} onNewTopic={handleNewTopic} filter="interest" />
+          <CategoryList categories={filteredCategories} onNewTopic={handleNewTopic} filter="interest" />
         </TabsContent>
 
         <TabsContent value="premium" className="mt-6">
-          <CategoryList categories={categories} onNewTopic={handleNewTopic} filter="premium" />
+          <CategoryList categories={filteredCategories} onNewTopic={handleNewTopic} filter="premium" />
         </TabsContent>
       </Tabs>
     </div>
