@@ -27,7 +27,7 @@ interface TopicData {
   created_at: string;
   forum_category: {
     is_premium: boolean;
-  } | null;
+  };
   profiles: TopicProfile;
   forum_replies: TopicReply[];
 }
@@ -45,10 +45,10 @@ export function Topic() {
           title,
           content,
           created_at,
-          forum_category:category_id(
+          forum_category:category_id!inner(
             is_premium
           ),
-          profiles:user_id(
+          profiles:user_id!inner(
             username,
             avatar_url
           ),
@@ -56,7 +56,7 @@ export function Topic() {
             id,
             content,
             created_at,
-            profiles:user_id(
+            profiles:user_id!inner(
               username,
               avatar_url
             )
