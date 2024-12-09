@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { Search, Crown } from "lucide-react";
+import { Crown } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -11,23 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { UserSearch } from "./UserSearch";
+import { UserList } from "./UserList";
 
 export function UserManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState<"username" | "email">("username");
   const [selectedDuration, setSelectedDuration] = useState("1");
 
   const { data: users, isLoading } = useQuery({
-    queryKey: ["users", searchQuery],
+    queryKey: ["users", searchQuery, searchType],
     queryFn: async () => {
       let query = supabase
         .from("profiles")
@@ -35,16 +29,28 @@ export function UserManagement() {
         .order("created_at", { ascending: false });
 
       if (searchQuery) {
-        query = query.or(
-          `username.ilike.%${searchQuery}%,display_name.ilike.%${searchQuery}%`
-        );
+        if (searchType === "email") {
+          const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
+          if (authError) throw authError;
+          
+          const matchingUserIds = authUsers
+            .filter(user => user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
+            .map(user => user.id);
+          
+          if (matchingUserIds.length > 0) {
+            query = query.in("id", matchingUserIds);
+          } else {
+            return [];
+          }
+        } else {
+          query = query.ilike("username", `%${searchQuery}%`);
+        }
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: true,
   });
 
   const updatePremiumStatus = useMutation({
@@ -104,74 +110,20 @@ export function UserManagement() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search users by name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select
-              value={selectedDuration}
-              onValueChange={setSelectedDuration}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Duration" />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 6, 12].map((months) => (
-                  <SelectItem key={months} value={months.toString()}>
-                    {months} {months === 1 ? "Month" : "Months"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-4">
-            {isLoading ? (
-              <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              </div>
-            ) : users?.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">
-                No users found
-              </p>
-            ) : (
-              users?.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-primary-100"
-                >
-                  <div>
-                    <h3 className="font-medium">
-                      {user.display_name || user.username || "Unnamed User"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {user.is_premium ? "Premium Member" : "Regular Member"}
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePromoteToPremium(user.id)}
-                    disabled={updatePremiumStatus.isPending}
-                    className={`${
-                      user.is_premium
-                        ? "text-primary hover:text-primary-600"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    {user.is_premium ? "Extend Premium" : "Make Premium"}
-                  </Button>
-                </div>
-              ))
-            )}
-          </div>
+          <UserSearch
+            searchQuery={searchQuery}
+            searchType={searchType}
+            onSearchChange={setSearchQuery}
+            onSearchTypeChange={setSearchType}
+            selectedDuration={selectedDuration}
+            onDurationChange={setSelectedDuration}
+          />
+          <UserList
+            users={users}
+            isLoading={isLoading}
+            onPromoteToPremium={handlePromoteToPremium}
+            updatePremiumStatus={updatePremiumStatus}
+          />
         </div>
       </CardContent>
     </Card>
