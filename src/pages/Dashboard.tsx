@@ -2,19 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { CookingPatternChart } from "@/components/CookingPatternChart";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { AdminControls } from "@/components/dashboard/AdminControls";
+import { MoodAnalytics } from "@/components/dashboard/MoodAnalytics";
 import { motion } from "framer-motion";
-
-interface CookingSummary {
-  totalRecipes: number;
-  favoriteTimeOfDay: string;
-  mostCookedEmotion: string;
-}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -23,7 +16,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [recentRecipes, setRecentRecipes] = useState<any[]>([]);
-  const [summary, setSummary] = useState<CookingSummary>({
+  const [summary, setSummary] = useState({
     totalRecipes: 0,
     favoriteTimeOfDay: '',
     mostCookedEmotion: '',
@@ -170,31 +163,8 @@ export default function Dashboard() {
         )}
 
         <div className="grid gap-6 md:grid-cols-2">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <Card className="hover:shadow-lg transition-shadow bg-white/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Your Cooking Patterns</CardTitle>
-                <CardDescription>
-                  See when you cook most frequently
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CookingPatternChart />
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <RecentActivity recentRecipes={recentRecipes} />
-          </motion.div>
+          <MoodAnalytics />
+          <RecentActivity recentRecipes={recentRecipes} />
         </div>
       </main>
     </div>

@@ -9,6 +9,131 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      battle_submissions: {
+        Row: {
+          battle_id: string
+          created_at: string
+          id: string
+          recipe_id: string
+          user_id: string
+          votes: number | null
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          id?: string
+          recipe_id: string
+          user_id: string
+          votes?: number | null
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          id?: string
+          recipe_id?: string
+          user_id?: string
+          votes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_submissions_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_battles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_submissions_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          likes: number | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes?: number | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          likes?: number | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mood_analytics: {
+        Row: {
+          created_at: string
+          id: string
+          intensity: number | null
+          mood: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intensity?: number | null
+          mood: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intensity?: number | null
+          mood?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mood_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -18,6 +143,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_admin: boolean | null
+          is_premium: boolean | null
           reputation: number | null
           updated_at: string
           username: string | null
@@ -30,6 +156,7 @@ export type Database = {
           display_name?: string | null
           id: string
           is_admin?: boolean | null
+          is_premium?: boolean | null
           reputation?: number | null
           updated_at?: string
           username?: string | null
@@ -42,11 +169,56 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_admin?: boolean | null
+          is_premium?: boolean | null
           reputation?: number | null
           updated_at?: string
           username?: string | null
         }
         Relationships: []
+      }
+      recipe_battles: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          end_date: string
+          id: string
+          start_date: string
+          status: string | null
+          target_mood: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description: string
+          end_date: string
+          id?: string
+          start_date: string
+          status?: string | null
+          target_mood: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: string | null
+          target_mood?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_battles_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recipe_comments: {
         Row: {
