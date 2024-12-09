@@ -17,6 +17,7 @@ export type Database = {
           recipe_id: string
           user_id: string
           votes: number | null
+          voting_ends_at: string | null
         }
         Insert: {
           battle_id: string
@@ -25,6 +26,7 @@ export type Database = {
           recipe_id: string
           user_id: string
           votes?: number | null
+          voting_ends_at?: string | null
         }
         Update: {
           battle_id?: string
@@ -33,6 +35,7 @@ export type Database = {
           recipe_id?: string
           user_id?: string
           votes?: number | null
+          voting_ends_at?: string | null
         }
         Relationships: [
           {
@@ -181,36 +184,45 @@ export type Database = {
       }
       recipe_battles: {
         Row: {
+          battle_type: string | null
           created_at: string
           creator_id: string
           description: string
           end_date: string
           id: string
+          prize_description: string | null
           start_date: string
           status: string | null
           target_mood: string
+          theme_ingredients: string[] | null
           title: string
         }
         Insert: {
+          battle_type?: string | null
           created_at?: string
           creator_id: string
           description: string
           end_date: string
           id?: string
+          prize_description?: string | null
           start_date: string
           status?: string | null
           target_mood: string
+          theme_ingredients?: string[] | null
           title: string
         }
         Update: {
+          battle_type?: string | null
           created_at?: string
           creator_id?: string
           description?: string
           end_date?: string
           id?: string
+          prize_description?: string | null
           start_date?: string
           status?: string | null
           target_mood?: string
+          theme_ingredients?: string[] | null
           title?: string
         }
         Relationships: [

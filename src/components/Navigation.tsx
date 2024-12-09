@@ -50,16 +50,16 @@ export function Navigation() {
   const navItems = [
     { label: "Explore", path: "/" },
     { 
+      label: "Battles", 
+      path: "/battles",
+      icon: Trophy,
+      description: "Join cooking challenges"
+    },
+    { 
       label: "Community", 
       path: "/community",
       icon: Users,
       description: "Share stories & photos"
-    },
-    { 
-      label: "Battles", 
-      path: "/community?tab=battles",
-      icon: Trophy,
-      description: "Join cooking challenges"
     },
     { label: "Pricing", path: "/pricing" },
   ];

@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Pricing from "./pages/Pricing";
 import Submit from "./pages/Submit";
 import Community from "./pages/Community";
+import Battles from "./pages/Battles";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/submit" element={<Submit />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/battles" element={<Battles />} />
           </Routes>
         </div>
       </BrowserRouter>
