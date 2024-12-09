@@ -20,9 +20,10 @@ interface CategoryListProps {
   categories: any[];
   onNewTopic: (categoryId: string, isPremium: boolean) => void;
   filter?: "all" | "emotion" | "interest" | "premium";
+  sortBy?: "trending" | "latest" | "popular";
 }
 
-export function CategoryList({ categories, onNewTopic, filter = "all" }: CategoryListProps) {
+export function CategoryList({ categories, onNewTopic, filter = "all", sortBy }: CategoryListProps) {
   const filteredCategories = categories?.filter((category) => {
     if (filter === "emotion") return category.category_type === "emotion";
     if (filter === "interest") return category.category_type === "interest" && !category.is_premium;
