@@ -5,19 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { CategoryList } from "./forum/CategoryList";
-import { Input } from "@/components/ui/input";
-import { 
-  Search, TrendingUp, Clock, Star, Flame, 
-  ThumbsUp, MessageSquare, Heart 
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+import { ForumSearch } from "./forum/ForumSearch";
+import { ForumActions } from "./forum/ForumActions";
+import { ForumFilters } from "./forum/ForumFilters";
 
 export function Forums() {
   const navigate = useNavigate();
@@ -103,66 +93,11 @@ export function Forums() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search categories..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap justify-center md:justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                {sortBy === "trending" && <Flame className="h-4 w-4" />}
-                {sortBy === "latest" && <Clock className="h-4 w-4" />}
-                {sortBy === "popular" && <ThumbsUp className="h-4 w-4" />}
-                Sort by: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setSortBy("trending")}>
-                <Flame className="h-4 w-4 mr-2" />
-                Trending
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy("latest")}>
-                <Clock className="h-4 w-4 mr-2" />
-                Latest
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy("popular")}>
-                <ThumbsUp className="h-4 w-4 mr-2" />
-                Popular
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button variant="outline" size="sm" className="gap-2">
-            <MessageSquare className="h-4 w-4" />
-            New Topic
-          </Button>
-        </div>
+        <ForumSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <ForumActions sortBy={sortBy} setSortBy={setSortBy} />
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10">
-          All Topics
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10">
-          Recipes
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10">
-          Discussions
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10">
-          Questions
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10">
-          Premium
-          <Star className="h-3 w-3 ml-1 text-yellow-500" />
-        </Badge>
-      </div>
+      <ForumFilters />
 
       <Tabs defaultValue="all" className="w-full" onValueChange={setSelectedTab}>
         <TabsList className="grid w-full grid-cols-4 lg:w-[600px] mx-auto">

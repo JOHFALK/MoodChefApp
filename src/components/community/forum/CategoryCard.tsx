@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Crown, PlusCircle, Users, ChevronRight, Eye, MessageCircle } from "lucide-react";
+import { MessageSquare, Crown, PlusCircle, Users, ChevronRight, Eye, MessageCircle, Heart, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -39,20 +39,40 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
     };
   };
 
+  const getCategoryIcon = () => {
+    if (category.is_premium) return <Crown className="h-5 w-5 text-yellow-500" />;
+    switch (category.category_type) {
+      case "emotion":
+        return <Heart className="h-5 w-5 text-rose-500" />;
+      case "interest":
+        return <Globe className="h-5 w-5 text-blue-500" />;
+      default:
+        return <MessageSquare className="h-5 w-5 text-primary" />;
+    }
+  };
+
+  const getCategoryBadgeVariant = () => {
+    if (category.is_premium) return "premium";
+    switch (category.category_type) {
+      case "emotion":
+        return "default";
+      case "interest":
+        return "secondary";
+      default:
+        return "outline";
+    }
+  };
+
   return (
     <motion.div layout>
       <Card className="hover:shadow-lg transition-shadow duration-300">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="flex items-center space-x-2">
-            {category.is_premium ? (
-              <Crown className="h-5 w-5 text-yellow-500" />
-            ) : (
-              <MessageSquare className="h-5 w-5 text-primary" />
-            )}
+            {getCategoryIcon()}
             <div className="flex flex-col">
               <CardTitle className="text-xl">{category.name}</CardTitle>
               <div className="flex gap-2 mt-1">
-                <Badge variant={category.category_type === "emotion" ? "default" : "secondary"}>
+                <Badge variant={getCategoryBadgeVariant()}>
                   {category.category_type}
                 </Badge>
                 {category.is_premium && (
