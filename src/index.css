@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 250 33% 99%;
+    --background: 60 30% 98%;
     --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 262 83% 58%;
+    --primary: 0 100% 71%;
     --primary-foreground: 210 20% 98%;
-    --secondary: 250 20% 95%;
+    --secondary: 45 100% 62%;
     --secondary-foreground: 220.9 39.3% 11%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 250 46% 55%;
+    --accent: 174 61% 55%;
     --accent-foreground: 210 20% 98%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 100% 50%;
     --destructive-foreground: 210 20% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 262 83% 58%;
-    --radius: 0.5rem;
+    --ring: 0 100% 71%;
+    --radius: 1rem;
   }
 }
 
@@ -34,5 +34,55 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background-image: radial-gradient(
+      circle at center,
+      rgba(255, 107, 107, 0.05) 0%,
+      rgba(254, 215, 102, 0.05) 100%
+    );
+    background-attachment: fixed;
   }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-lg border border-white/20 shadow-xl;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent;
+  }
+
+  .shine-effect {
+    @apply relative overflow-hidden;
+  }
+
+  .shine-effect::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-shine bg-[length:200%_100%] animate-shimmer;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+}
+
+.nav-item {
+  @apply relative px-4 py-2 rounded-lg transition-all duration-300;
+}
+
+.nav-item::after {
+  content: '';
+  @apply absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300;
+}
+
+.nav-item:hover::after {
+  @apply w-full;
+}
+
+.button-gradient {
+  @apply bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity;
 }
