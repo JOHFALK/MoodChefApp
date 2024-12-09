@@ -24,6 +24,8 @@ export function Forums() {
             created_at,
             user_id,
             views,
+            emotions,
+            has_recipe,
             forum_replies(count)
           )
         `)
@@ -38,9 +40,10 @@ export function Forums() {
     if (isPremium) {
       toast({
         title: "Premium Feature",
-        description: "This category is for premium members only",
+        description: "This category is for premium members only. Upgrade to access exclusive content!",
         variant: "destructive",
       });
+      navigate("/pricing");
       return;
     }
     toast({
@@ -60,9 +63,10 @@ export function Forums() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="all" className="w-full" onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
           <TabsTrigger value="all">All Categories</TabsTrigger>
-          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="emotion">Emotion-Based</TabsTrigger>
+          <TabsTrigger value="interest">Interest-Based</TabsTrigger>
           <TabsTrigger value="premium">Premium</TabsTrigger>
         </TabsList>
 
@@ -70,8 +74,12 @@ export function Forums() {
           <CategoryList categories={categories} onNewTopic={handleNewTopic} filter="all" />
         </TabsContent>
 
-        <TabsContent value="general" className="mt-6">
-          <CategoryList categories={categories} onNewTopic={handleNewTopic} filter="general" />
+        <TabsContent value="emotion" className="mt-6">
+          <CategoryList categories={categories} onNewTopic={handleNewTopic} filter="emotion" />
+        </TabsContent>
+
+        <TabsContent value="interest" className="mt-6">
+          <CategoryList categories={categories} onNewTopic={handleNewTopic} filter="interest" />
         </TabsContent>
 
         <TabsContent value="premium" className="mt-6">

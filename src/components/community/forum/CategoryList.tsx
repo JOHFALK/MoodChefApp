@@ -19,12 +19,13 @@ const item = {
 interface CategoryListProps {
   categories: any[];
   onNewTopic: (categoryId: string, isPremium: boolean) => void;
-  filter?: "all" | "general" | "premium";
+  filter?: "all" | "emotion" | "interest" | "premium";
 }
 
 export function CategoryList({ categories, onNewTopic, filter = "all" }: CategoryListProps) {
   const filteredCategories = categories?.filter((category) => {
-    if (filter === "general") return !category.is_premium;
+    if (filter === "emotion") return category.category_type === "emotion";
+    if (filter === "interest") return category.category_type === "interest" && !category.is_premium;
     if (filter === "premium") return category.is_premium;
     return true;
   });

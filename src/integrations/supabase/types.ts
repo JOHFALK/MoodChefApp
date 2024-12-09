@@ -107,24 +107,30 @@ export type Database = {
       }
       forum_categories: {
         Row: {
+          category_type: string
           created_at: string
           description: string | null
+          icon: string | null
           id: string
           is_premium: boolean | null
           name: string
           updated_at: string
         }
         Insert: {
+          category_type?: string
           created_at?: string
           description?: string | null
+          icon?: string | null
           id?: string
           is_premium?: boolean | null
           name: string
           updated_at?: string
         }
         Update: {
+          category_type?: string
           created_at?: string
           description?: string | null
+          icon?: string | null
           id?: string
           is_premium?: boolean | null
           name?: string
@@ -182,7 +188,10 @@ export type Database = {
           category_id: string | null
           content: string
           created_at: string
+          emotions: string[] | null
+          has_recipe: boolean | null
           id: string
+          ingredients: string[] | null
           is_poll: boolean | null
           status: string | null
           title: string
@@ -194,7 +203,10 @@ export type Database = {
           category_id?: string | null
           content: string
           created_at?: string
+          emotions?: string[] | null
+          has_recipe?: boolean | null
           id?: string
+          ingredients?: string[] | null
           is_poll?: boolean | null
           status?: string | null
           title: string
@@ -206,7 +218,10 @@ export type Database = {
           category_id?: string | null
           content?: string
           created_at?: string
+          emotions?: string[] | null
+          has_recipe?: boolean | null
           id?: string
+          ingredients?: string[] | null
           is_poll?: boolean | null
           status?: string | null
           title?: string
@@ -333,6 +348,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          achievements: string[] | null
           avatar_url: string | null
           badges: string[] | null
           bio: string | null
@@ -341,11 +357,13 @@ export type Database = {
           id: string
           is_admin: boolean | null
           is_premium: boolean | null
+          mood_points: number | null
           reputation: number | null
           updated_at: string
           username: string
         }
         Insert: {
+          achievements?: string[] | null
           avatar_url?: string | null
           badges?: string[] | null
           bio?: string | null
@@ -354,11 +372,13 @@ export type Database = {
           id: string
           is_admin?: boolean | null
           is_premium?: boolean | null
+          mood_points?: number | null
           reputation?: number | null
           updated_at?: string
           username?: string
         }
         Update: {
+          achievements?: string[] | null
           avatar_url?: string | null
           badges?: string[] | null
           bio?: string | null
@@ -367,6 +387,7 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           is_premium?: boolean | null
+          mood_points?: number | null
           reputation?: number | null
           updated_at?: string
           username?: string

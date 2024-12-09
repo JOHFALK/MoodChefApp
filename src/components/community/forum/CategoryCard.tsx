@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { MessageSquare, Crown, PlusCircle, Users, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 interface CategoryCardProps {
   category: {
@@ -10,12 +11,16 @@ interface CategoryCardProps {
     name: string;
     description: string | null;
     is_premium: boolean;
+    category_type: string;
+    icon: string | null;
     forum_topics?: {
       id: string;
       title: string;
       created_at: string;
       user_id: string;
       views: number;
+      emotions: string[];
+      has_recipe: boolean;
       forum_replies: { count: number }[];
     }[];
   };
@@ -35,7 +40,17 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
             ) : (
               <MessageSquare className="h-5 w-5 text-primary" />
             )}
-            <CardTitle className="text-xl">{category.name}</CardTitle>
+            <div className="flex flex-col">
+              <CardTitle className="text-xl">{category.name}</CardTitle>
+              <div className="flex gap-2 mt-1">
+                <Badge variant={category.category_type === "emotion" ? "default" : "secondary"}>
+                  {category.category_type}
+                </Badge>
+                {category.is_premium && (
+                  <Badge variant="premium">Premium</Badge>
+                )}
+              </div>
+            </div>
           </div>
           <Button
             variant="outline"
@@ -58,9 +73,20 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
               >
                 <div className="flex items-center space-x-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm group-hover:text-primary transition-colors">
-                    {topic.title}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-sm group-hover:text-primary transition-colors">
+                      {topic.title}
+                    </span>
+                    {topic.emotions?.length > 0 && (
+                      <div className="flex gap-1">
+                        {topic.emotions.map((emotion, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {emotion}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
