@@ -1,3 +1,5 @@
+import type { Json } from './json';
+
 export interface Tables {
   profiles: {
     id: string;
