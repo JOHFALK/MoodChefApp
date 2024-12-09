@@ -41,14 +41,25 @@ export function Topic() {
       const { data, error } = await supabase
         .from("forum_topics")
         .select(`
-          *,
-          forum_category:category_id(is_premium),
-          profiles:user_id(username, avatar_url),
+          id,
+          title,
+          content,
+          created_at,
+          forum_category:category_id(
+            is_premium
+          ),
+          profiles:user_id(
+            username,
+            avatar_url
+          ),
           forum_replies(
             id,
             content,
             created_at,
-            profiles:user_id(username, avatar_url)
+            profiles:user_id(
+              username,
+              avatar_url
+            )
           )
         `)
         .eq("id", topicId)
