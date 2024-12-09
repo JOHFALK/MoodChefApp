@@ -11,6 +11,7 @@ import Pricing from "./pages/Pricing";
 import Submit from "./pages/Submit";
 import Community from "./pages/Community";
 import Battles from "./pages/Battles";
+import { Topic } from "@/components/community/forum/Topic";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/submit" element={<Submit />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/community/topic/:topicId" element={<Topic />} />
             <Route path="/battles" element={<Battles />} />
           </Routes>
         </div>
