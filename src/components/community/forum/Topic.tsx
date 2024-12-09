@@ -45,10 +45,10 @@ export function Topic() {
           title,
           content,
           created_at,
-          forum_category:category_id!inner(
+          forum_category:forum_categories!inner(
             is_premium
           ),
-          profiles:user_id!inner(
+          profiles:profiles!inner(
             username,
             avatar_url
           ),
@@ -56,7 +56,7 @@ export function Topic() {
             id,
             content,
             created_at,
-            profiles:user_id!inner(
+            profiles:profiles!inner(
               username,
               avatar_url
             )
