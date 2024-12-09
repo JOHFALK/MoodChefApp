@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Star } from "lucide-react";
+import { Star, Trophy, Medal, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -9,6 +9,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, x: -20 },
+  show: { opacity: 1, x: 0 }
+};
 
 export function BattleLeaderboard() {
   const { data: topChefs } = useQuery({
@@ -29,49 +44,65 @@ export function BattleLeaderboard() {
     },
   });
 
+  const getRankIcon = (index: number) => {
+    switch (index) {
+      case 0:
+        return <Crown className="w-5 h-5 text-yellow-500" />;
+      case 1:
+        return <Medal className="w-5 h-5 text-gray-400" />;
+      case 2:
+        return <Medal className="w-5 h-5 text-amber-600" />;
+      default:
+        return <Trophy className="w-5 h-5 text-primary/40" />;
+    }
+  };
+
   return (
-    <Card>
+    <Card className="bg-white/80 backdrop-blur-sm border-primary/10">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Star className="w-5 h-5 text-primary" />
-          Top Battle Champions
+        <CardTitle className="flex items-center gap-2 text-2xl">
+          <Star className="w-6 h-6 text-primary" />
+          Battle Champions
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="space-y-4"
+        >
           {topChefs?.map((submission, index) => (
             <motion.div
               key={submission.user.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex items-center gap-4"
+              variants={item}
+              className="flex items-center gap-4 p-3 rounded-lg hover:bg-primary/5 transition-colors"
             >
               <div className="flex-shrink-0 w-8">
-                {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}th`}
+                {getRankIcon(index)}
               </div>
               
-              <Avatar>
+              <Avatar className="border-2 border-primary/20">
                 <AvatarImage src={submission.user.avatar_url} />
-                <AvatarFallback>
+                <AvatarFallback className="bg-primary/10">
                   {submission.user.username?.[0]?.toUpperCase() || "?"}
                 </AvatarFallback>
               </Avatar>
 
-              <div className="flex-1">
-                <p className="font-medium">{submission.user.username}</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{submission.user.username}</p>
                 <p className="text-sm text-muted-foreground truncate">
                   {submission.recipe.title}
                 </p>
               </div>
 
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-primary" />
-                <span>{submission.votes || 0}</span>
+              <div className="flex items-center gap-1 text-secondary">
+                <Star className="w-4 h-4" />
+                <span className="font-medium">{submission.votes || 0}</span>
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </CardContent>
     </Card>
   );
