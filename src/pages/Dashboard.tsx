@@ -9,6 +9,9 @@ import { AdminControls } from "@/components/dashboard/AdminControls";
 import { BattleManager } from "@/components/dashboard/battle/BattleManager";
 import { UserManagement } from "@/components/dashboard/UserManagement";
 import { MoodAnalytics } from "@/components/dashboard/MoodAnalytics";
+import { WelcomeMessage } from "@/components/dashboard/WelcomeMessage";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {
@@ -150,36 +153,32 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+        >
+          <WelcomeMessage userName={user?.email?.split('@')[0] || 'Chef'} />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className="grid gap-6 md:grid-cols-3"
         >
           <StatCards summary={summary} />
         </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <QuickActions />
+        </motion.div>
+
         {isAdmin && (
           <div className="space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <AdminControls />
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <BattleManager />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <UserManagement />
-            </motion.div>
+            <AdminControls />
+            <BattleManager />
+            <UserManagement />
           </div>
         )}
 
@@ -187,18 +186,26 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
           >
             <MoodAnalytics />
           </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
           >
             <RecentActivity recentRecipes={recentRecipes} />
           </motion.div>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <NotificationCenter />
+        </motion.div>
       </main>
     </div>
   );
