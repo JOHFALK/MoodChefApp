@@ -6,7 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { AdminControls } from "@/components/dashboard/AdminControls";
-import { BattleManager } from "@/components/dashboard/BattleManager";
+import { BattleManager } from "@/components/dashboard/battle/BattleManager";
 import { UserManagement } from "@/components/dashboard/UserManagement";
 import { MoodAnalytics } from "@/components/dashboard/MoodAnalytics";
 import { motion } from "framer-motion";
@@ -135,7 +135,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/5 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
@@ -150,12 +150,13 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="grid gap-6 md:grid-cols-3"
         >
           <StatCards summary={summary} />
         </motion.div>
 
         {isAdmin && (
-          <>
+          <div className="space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -179,12 +180,24 @@ export default function Dashboard() {
             >
               <UserManagement />
             </motion.div>
-          </>
+          </div>
         )}
 
         <div className="grid gap-6 md:grid-cols-2">
-          <MoodAnalytics />
-          <RecentActivity recentRecipes={recentRecipes} />
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <MoodAnalytics />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <RecentActivity recentRecipes={recentRecipes} />
+          </motion.div>
         </div>
       </main>
     </div>

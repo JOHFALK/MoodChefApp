@@ -18,39 +18,42 @@ export function StatCards({ summary }: StatCardsProps) {
       title: "Total Recipes Cooked",
       value: summary.totalRecipes,
       icon: Calendar,
-      color: "from-primary-400/20 to-primary-600/20",
-      textColor: "text-primary-700",
+      gradient: "from-primary-400 to-primary-600",
+      iconColor: "text-primary-600",
     },
     {
       title: "Favorite Time to Cook",
       value: summary.favoriteTimeOfDay,
       icon: Clock,
-      color: "from-secondary-400/20 to-secondary-600/20",
-      textColor: "text-secondary-800",
+      gradient: "from-secondary-400 to-secondary-600",
+      iconColor: "text-secondary-600",
     },
     {
       title: "Most Common Mood",
       value: summary.mostCookedEmotion,
       icon: TrendingUp,
-      color: "from-accent/20 to-accent/30",
-      textColor: "text-accent",
+      gradient: "from-accent to-accent-foreground",
+      iconColor: "text-accent",
     },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <>
       {cards.map((card, index) => (
         <motion.div
           key={card.title}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.1 }}
+          className="w-full"
         >
-          <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br border-0 backdrop-blur-sm">
+          <Card className="hover:shadow-lg transition-all duration-300 bg-white/95 backdrop-blur-sm border border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <card.icon className={`w-8 h-8 ${card.textColor}`} />
-                <div className={`text-2xl font-bold ${card.textColor}`}>
+                <div className={`p-3 rounded-lg bg-gradient-to-br ${card.gradient} bg-opacity-10`}>
+                  <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   {typeof card.value === 'number' ? card.value.toLocaleString() : card.value}
                 </div>
               </div>
@@ -61,6 +64,6 @@ export function StatCards({ summary }: StatCardsProps) {
           </Card>
         </motion.div>
       ))}
-    </div>
+    </>
   );
 }
