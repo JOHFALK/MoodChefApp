@@ -36,14 +36,23 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const { data } = await supabase
-      .from('recipe_votes')
-      .select('id')
-      .eq('recipe_id', recipe.id)
-      .eq('user_id', session.user.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('recipe_votes')
+        .select('id')
+        .eq('recipe_id', recipe.id)
+        .eq('user_id', session.user.id)
+        .maybeSingle(); // Use maybeSingle() instead of single()
 
-    setHasVoted(!!data);
+      if (error) {
+        console.error('Error checking vote:', error);
+        return;
+      }
+
+      setHasVoted(!!data);
+    } catch (error) {
+      console.error('Error checking vote:', error);
+    }
   };
 
   const handleVote = async () => {
@@ -59,22 +68,26 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     try {
       if (hasVoted) {
         // Remove vote
-        await supabase
+        const { error: deleteError } = await supabase
           .from('recipe_votes')
           .delete()
           .eq('recipe_id', recipe.id)
           .eq('user_id', session.user.id);
 
-        await supabase
+        if (deleteError) throw deleteError;
+
+        const { error: updateError } = await supabase
           .from('recipes')
           .update({ votes: votes - 1 })
           .eq('id', recipe.id);
+
+        if (updateError) throw updateError;
 
         setVotes(prev => prev - 1);
         setHasVoted(false);
       } else {
         // Add vote
-        await supabase
+        const { error: insertError } = await supabase
           .from('recipe_votes')
           .insert({
             recipe_id: recipe.id,
@@ -82,10 +95,14 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             created_at: new Date().toISOString()
           });
 
-        await supabase
+        if (insertError) throw insertError;
+
+        const { error: updateError } = await supabase
           .from('recipes')
           .update({ votes: votes + 1 })
           .eq('id', recipe.id);
+
+        if (updateError) throw updateError;
 
         setVotes(prev => prev + 1);
         setHasVoted(true);
