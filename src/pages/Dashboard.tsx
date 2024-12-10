@@ -6,6 +6,8 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Crown } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -74,6 +76,21 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
+        <div className="container py-4">
+          <Badge 
+            variant={subscription?.isSubscribed ? "default" : "secondary"}
+            className="mb-4 flex items-center w-fit gap-2"
+          >
+            {subscription?.isSubscribed ? (
+              <>
+                <Crown className="w-4 h-4" />
+                Premium Member
+              </>
+            ) : (
+              'Free Account'
+            )}
+          </Badge>
+        </div>
         <DashboardContent />
         {isAdmin && subscription?.isSubscribed && (
           <div className="container py-8">
