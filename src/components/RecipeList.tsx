@@ -33,6 +33,8 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ['recipes', selectedEmotions, ingredients],
     queryFn: async () => {
+      console.log('Starting query with emotions:', selectedEmotions);
+      
       let query = supabase
         .from('recipes')
         .select('*')
@@ -40,8 +42,9 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
 
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
-        // Convert selected emotion to lowercase for consistent comparison
-        const emotion = selectedEmotions[0].toLowerCase();
+        // Keep original case for emotion matching
+        const emotion = selectedEmotions[0];
+        console.log('Filtering by emotion:', emotion);
         query = query.contains('emotions', [emotion]);
       }
 
@@ -54,6 +57,9 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
 
       const { data, error } = await query;
       
+      console.log('Query results:', data);
+      console.log('Query error:', error);
+
       if (error) {
         console.error('Supabase query error:', error);
         throw error;
@@ -65,9 +71,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         description: recipe.description || '',
         cookingTime: recipe.cooking_time || 0,
         servings: 2,
-        emotions: recipe.emotions?.map((e: string) => 
-          e.charAt(0).toUpperCase() + e.slice(1).toLowerCase()
-        ) || [],
+        emotions: recipe.emotions || [],
         ingredients: recipe.ingredients || [],
         votes: recipe.votes || 0,
         is_premium: recipe.is_premium || false
