@@ -8,13 +8,17 @@ const endpoints = [
   'tags=breakfast',
   'tags=lunch',
   'tags=snacks',
-  'tags=easy'
+  'tags=easy',
+  'tags=baking',
+  'tags=chocolate',
+  'tags=pasta',
+  'tags=soup',
+  'tags=salad'
 ];
 
 export async function fetchRecipesFromAPI(apiKey: string): Promise<any[]> {
   let allRecipes = [];
-  
-  for (const endpoint of endpoints) {
+  const fetchPromises = endpoints.map(async (endpoint) => {
     try {
       const response = await fetch(
         `https://tasty.p.rapidapi.com/recipes/list?from=0&size=40&${endpoint}`,
@@ -28,15 +32,19 @@ export async function fetchRecipesFromAPI(apiKey: string): Promise<any[]> {
 
       if (!response.ok) {
         console.error(`Tasty API error for ${endpoint}:`, response.statusText);
-        continue;
+        return [];
       }
 
       const data = await response.json();
-      allRecipes = [...allRecipes, ...data.results];
+      return data.results || [];
     } catch (error) {
       console.error(`Error fetching recipes for ${endpoint}:`, error);
+      return [];
     }
-  }
+  });
+
+  const results = await Promise.all(fetchPromises);
+  allRecipes = results.flat();
 
   // Remove duplicates based on recipe name
   return Array.from(new Map(allRecipes.map(recipe => [recipe.name, recipe])).values());

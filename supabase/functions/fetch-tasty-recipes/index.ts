@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { emotionMappingRules } from './emotionMapping.ts'
 import { processRecipes } from './recipeProcessor.ts'
 import { fetchRecipesFromAPI } from './tastyAPI.ts'
 
@@ -44,15 +43,19 @@ serve(async (req) => {
       });
     });
 
+    console.log('Current emotion counts:', Object.fromEntries(emotionCounts));
+
     // Calculate how many more recipes we need per emotion
     const targetCount = 15;
     const neededRecipes = new Map();
-    Object.keys(emotionMappingRules).forEach(emotion => {
+    ['Happy', 'Sad', 'Energetic', 'Calm', 'Tired', 'Stressed'].forEach(emotion => {
       const current = emotionCounts.get(emotion) || 0;
       if (current < targetCount) {
         neededRecipes.set(emotion, targetCount - current);
       }
     });
+
+    console.log('Needed recipes:', Object.fromEntries(neededRecipes));
 
     if (neededRecipes.size === 0) {
       return new Response(
@@ -63,6 +66,8 @@ serve(async (req) => {
 
     // Fetch and process recipes
     const allRecipes = await fetchRecipesFromAPI(TASTY_API_KEY);
+    console.log('Fetched recipes count:', allRecipes.length);
+    
     const processedRecipes = await processRecipes(allRecipes, neededRecipes);
 
     // Insert recipes in batches
@@ -79,11 +84,13 @@ serve(async (req) => {
 
         if (error) {
           errors.push({ batch: i / batchSize + 1, error: error.message });
+          console.error('Batch insert error:', error);
         } else {
           successCount += batch.length;
         }
       } catch (error) {
         errors.push({ batch: i / batchSize + 1, error: error.message });
+        console.error('Batch processing error:', error);
       }
     }
 
@@ -96,6 +103,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Function error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
