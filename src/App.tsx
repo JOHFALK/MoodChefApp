@@ -14,6 +14,8 @@ import Battles from "./pages/Battles";
 import Recipe from "./pages/Recipe";
 import { Topic } from "@/components/community/forum/Topic";
 import { useSession } from "@/hooks/use-session";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,37 +38,60 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Navigation />
-        <div className="pt-16">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/submit" element={
-              <ProtectedRoute>
-                <Submit />
-              </ProtectedRoute>
-            } />
-            <Route path="/community" element={<Community />} />
-            <Route path="/community/topic/:topicId" element={<Topic />} />
-            <Route path="/battles" element={<Battles />} />
-            <Route path="/recipe/:recipeId" element={<Recipe />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Initialize session from local storage
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        // Refresh the session if it exists
+        supabase.auth.refreshSession();
+      }
+    });
+
+    // Set up auth state change listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        console.log("Auth state changed:", _event, session.user?.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Navigation />
+          <div className="pt-16">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/submit" element={
+                <ProtectedRoute>
+                  <Submit />
+                </ProtectedRoute>
+              } />
+              <Route path="/community" element={<Community />} />
+              <Route path="/community/topic/:topicId" element={<Topic />} />
+              <Route path="/battles" element={<Battles />} />
+              <Route path="/recipe/:recipeId" element={<Recipe />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
