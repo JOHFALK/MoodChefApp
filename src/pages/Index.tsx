@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [showSubmissionForm, setShowSubmissionForm] = useState(false);
+  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
+  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [showRecipes, setShowRecipes] = useState(false);
 
   useEffect(() => {
     // Check current session
@@ -47,6 +50,13 @@ const Index = () => {
       authSubscription.unsubscribe();
     };
   }, []);
+
+  const handleSearch = (emotions: string[], searchIngredients: string[]) => {
+    console.log("Search triggered with:", { emotions, searchIngredients });
+    setSelectedEmotions(emotions);
+    setIngredients(searchIngredients);
+    setShowRecipes(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-radial from-background via-secondary/5 to-background">
@@ -104,7 +114,20 @@ const Index = () => {
                 </motion.p>
               </div>
               
-              <RecipeForm />
+              <RecipeForm onSearch={handleSearch} />
+
+              {showRecipes && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-8"
+                >
+                  <RecipeList 
+                    selectedEmotions={selectedEmotions} 
+                    ingredients={ingredients} 
+                  />
+                </motion.div>
+              )}
 
               <Features onSubmitRecipe={() => setShowSubmissionForm(true)} />
             </motion.div>
