@@ -6,7 +6,7 @@ export function useSubscription() {
     queryKey: ['subscription'],
     queryFn: async () => {
       try {
-        // First, get a fresh session
+        // Get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -19,23 +19,10 @@ export function useSubscription() {
           return { isSubscribed: false };
         }
 
-        // Refresh the session to ensure we have a valid token
-        const { data: { session: refreshedSession }, error: refreshError } = 
-          await supabase.auth.refreshSession();
-
-        if (refreshError) {
-          console.error('Session refresh error:', refreshError);
-          return { isSubscribed: false };
-        }
-
-        if (!refreshedSession) {
-          console.log('No refreshed session available');
-          return { isSubscribed: false };
-        }
-
+        // Use the current session's access token
         const { data, error } = await supabase.functions.invoke('check-subscription', {
           headers: {
-            Authorization: `Bearer ${refreshedSession.access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
         });
 

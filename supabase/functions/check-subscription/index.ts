@@ -8,20 +8,20 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Initialize Supabase client
-    const supabaseClient = createClient(
+    // Initialize Supabase client with service role key
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', // Use service role key for admin access
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
     // Get the authorization header
     const authHeader = req.headers.get('Authorization');
+
     if (!authHeader) {
       throw new Error('No authorization header');
     }
@@ -29,25 +29,24 @@ serve(async (req) => {
     // Get the JWT token
     const token = authHeader.replace('Bearer ', '');
     
-    // Get the user from the token using the service role client
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    // Get the user from the token using the admin client
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
     
-    if (userError) {
+    if (userError || !user) {
       console.error('User error:', userError);
       throw new Error('Failed to authenticate user');
     }
 
-    if (!user || !user.email) {
-      console.error('No user or email found');
-      throw new Error('User not found');
+    if (!user.email) {
+      throw new Error('User email not found');
     }
 
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
       apiVersion: '2023-10-16',
     });
 
-    // Get customer by email
+    // Find customer by email
     const customers = await stripe.customers.list({
       email: user.email,
       limit: 1,
@@ -68,17 +67,19 @@ serve(async (req) => {
     });
 
     return new Response(
-      JSON.stringify({ isSubscribed: subscriptions.data.length > 0 }),
+      JSON.stringify({ 
+        isSubscribed: subscriptions.data.length > 0,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in check-subscription:', error);
+    console.error('Error:', error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
