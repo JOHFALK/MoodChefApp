@@ -42,6 +42,7 @@ export function RecipeGrid() {
           )
         `)
         .eq('status', 'approved')
+        .neq('user_id', null) // Only show user-generated recipes
         .order('votes', { ascending: false });
       
       if (error) throw error;
