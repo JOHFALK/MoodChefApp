@@ -24,17 +24,39 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    // Check current session
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session check error:', error);
+          setUser(null);
+          return;
+        }
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('Session check error:', error);
+        setUser(null);
+      }
+    };
 
+    checkSession();
+
+    // Listen for auth changes
     const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
+      data: { subscription: authSubscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        setUser(null);
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setUser(session?.user ?? null);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      authSubscription.unsubscribe();
+    };
   }, []);
 
   const handleEmotionSelect = (emotion: string) => {
@@ -45,28 +67,40 @@ const Index = () => {
     }
   };
 
-  const handleSubmitRecipe = () => {
-    if (!user) {
+  const handleSubmitRecipe = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to submit recipes",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
+      if (!subscription?.isSubscribed) {
+        toast({
+          title: "Premium feature",
+          description: "Recipe submission is available for premium users only",
+          variant: "destructive",
+        });
+        navigate("/pricing");
+        return;
+      }
+
+      setShowSubmissionForm(true);
+    } catch (error) {
+      console.error('Session check error:', error);
       toast({
-        title: "Authentication required",
-        description: "Please sign in to submit recipes",
+        title: "Authentication error",
+        description: "Please try signing in again",
         variant: "destructive",
       });
       navigate("/login");
-      return;
     }
-
-    if (!subscription?.isSubscribed) {
-      toast({
-        title: "Premium feature",
-        description: "Recipe submission is available for premium users only",
-        variant: "destructive",
-      });
-      navigate("/pricing");
-      return;
-    }
-
-    setShowSubmissionForm(true);
   };
 
   return (
