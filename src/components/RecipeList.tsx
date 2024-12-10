@@ -29,12 +29,18 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         .select('*')
         .eq('status', 'approved');
 
+      // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
+        // Use contains for array overlap - matches if any emotion matches
         query = query.contains('emotions', selectedEmotions);
       }
 
+      // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
-        query = query.contains('ingredients', ingredients);
+        // Use contains for array overlap - matches if any ingredient matches
+        ingredients.forEach(ingredient => {
+          query = query.contains('ingredients', [ingredient]);
+        });
       }
 
       const { data, error } = await query;
