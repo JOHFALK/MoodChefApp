@@ -33,18 +33,6 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ['recipes', selectedEmotions, ingredients],
     queryFn: async () => {
-      console.log('Query started with emotions:', selectedEmotions);
-      console.log('Query started with ingredients:', ingredients);
-
-      // First, let's check what recipes exist in the database
-      const { data: allRecipes, error: allRecipesError } = await supabase
-        .from('recipes')
-        .select('*')
-        .eq('status', 'approved');
-      
-      console.log('All approved recipes:', allRecipes);
-      console.log('All recipes error:', allRecipesError);
-
       let query = supabase
         .from('recipes')
         .select('*')
@@ -52,21 +40,15 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
 
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
+        // Convert selected emotion to lowercase for consistent comparison
         const emotion = selectedEmotions[0].toLowerCase();
-        console.log('Filtering by normalized emotion:', emotion);
-        
-        // Use array_overlap to find recipes with matching emotions
-        query = query.filter('emotions', 'cs', `{${emotion}}`);
-        
-        const { data: testQuery, error: testError } = await query;
-        console.log('Test query results:', testQuery);
-        console.log('Test query error:', testError);
+        query = query.contains('emotions', [emotion]);
       }
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
         ingredients.forEach(ingredient => {
-          query = query.filter('ingredients', 'cs', `{${ingredient.toLowerCase()}}`);
+          query = query.contains('ingredients', [ingredient.toLowerCase()]);
         });
       }
 
@@ -76,8 +58,6 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         console.error('Supabase query error:', error);
         throw error;
       }
-
-      console.log('Final query results:', data);
 
       return (data || []).map(recipe => ({
         id: recipe.id,
