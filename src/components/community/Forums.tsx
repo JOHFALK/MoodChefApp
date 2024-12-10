@@ -10,6 +10,7 @@ import { ForumActions } from "./forum/ForumActions";
 import { ForumFilters } from "./forum/ForumFilters";
 import { TrendingMoods } from "./forum/TrendingMoods";
 import { Flame, TrendingUp, Clock, ThumbsUp, Crown } from "lucide-react";
+import { useSubscription } from "@/hooks/use-subscription";
 
 export function Forums() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export function Forums() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"latest" | "trending" | "popular">("trending");
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const { data: subscriptionData } = useSubscription();
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ["forumCategories"],
@@ -45,12 +47,16 @@ export function Forums() {
   });
 
   const handleNewTopic = () => {
-    toast({
-      title: "Premium Feature",
-      description: "Creating topics is a premium feature. Upgrade to start discussions!",
-      variant: "destructive",
-    });
-    navigate("/pricing");
+    if (!subscriptionData?.isSubscribed) {
+      toast({
+        title: "Premium Feature",
+        description: "Creating topics is a premium feature. Upgrade to start discussions!",
+        variant: "destructive",
+      });
+      navigate("/pricing");
+      return;
+    }
+    navigate("/community/new-topic");
   };
 
   const filteredCategories = categories?.filter(category => {
@@ -130,6 +136,7 @@ export function Forums() {
             onNewTopic={handleNewTopic} 
             filter="all"
             sortBy={sortBy}
+            isPremium={subscriptionData?.isSubscribed}
           />
         </TabsContent>
 
@@ -139,6 +146,7 @@ export function Forums() {
             onNewTopic={handleNewTopic} 
             filter="emotion"
             sortBy={sortBy}
+            isPremium={subscriptionData?.isSubscribed}
           />
         </TabsContent>
 
@@ -148,6 +156,7 @@ export function Forums() {
             onNewTopic={handleNewTopic} 
             filter="interest"
             sortBy={sortBy}
+            isPremium={subscriptionData?.isSubscribed}
           />
         </TabsContent>
 
@@ -157,6 +166,7 @@ export function Forums() {
             onNewTopic={handleNewTopic} 
             filter="premium"
             sortBy={sortBy}
+            isPremium={subscriptionData?.isSubscribed}
           />
         </TabsContent>
 
@@ -166,6 +176,7 @@ export function Forums() {
             onNewTopic={handleNewTopic} 
             filter="all"
             sortBy="trending"
+            isPremium={subscriptionData?.isSubscribed}
           />
         </TabsContent>
       </Tabs>

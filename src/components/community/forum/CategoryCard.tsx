@@ -28,9 +28,10 @@ interface CategoryCardProps {
     }[];
   };
   onNewTopic: (categoryId: string, isPremium: boolean) => void;
+  isPremium?: boolean;
 }
 
-export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
+export function CategoryCard({ category, onNewTopic, isPremium }: CategoryCardProps) {
   const navigate = useNavigate();
 
   const getTopicStats = (topic: CategoryCardProps["category"]["forum_topics"][0]) => {
@@ -68,9 +69,9 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
     <motion.div layout>
       <Card className={cn(
         "hover:shadow-lg transition-shadow duration-300",
-        category.is_premium && "relative"
+        category.is_premium && !isPremium && "relative"
       )}>
-        {category.is_premium && (
+        {category.is_premium && !isPremium && (
           <div className="absolute inset-0 backdrop-blur-[2px] bg-background/50 z-10 flex items-center justify-center">
             <div className="text-center p-4">
               <Crown className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
@@ -118,7 +119,7 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{category.is_premium ? "Premium members only" : "Start a new discussion"}</p>
+                <p>{!isPremium ? "Premium members only" : "Start a new discussion"}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -182,4 +183,3 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
     </motion.div>
   );
 }
-

@@ -21,9 +21,10 @@ interface CategoryListProps {
   onNewTopic: (categoryId: string, isPremium: boolean) => void;
   filter?: "all" | "emotion" | "interest" | "premium";
   sortBy?: "trending" | "latest" | "popular";
+  isPremium?: boolean;
 }
 
-export function CategoryList({ categories, onNewTopic, filter = "all", sortBy }: CategoryListProps) {
+export function CategoryList({ categories, onNewTopic, filter = "all", sortBy, isPremium }: CategoryListProps) {
   const filteredCategories = categories?.filter((category) => {
     if (filter === "emotion") return category.category_type === "emotion";
     if (filter === "interest") return category.category_type === "interest" && !category.is_premium;
@@ -40,7 +41,7 @@ export function CategoryList({ categories, onNewTopic, filter = "all", sortBy }:
     >
       {filteredCategories?.map((category) => (
         <motion.div key={category.id} variants={item}>
-          <CategoryCard category={category} onNewTopic={onNewTopic} />
+          <CategoryCard category={category} onNewTopic={onNewTopic} isPremium={isPremium} />
         </motion.div>
       ))}
     </motion.div>
