@@ -13,58 +13,55 @@ serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Get the authorization header
     const authHeader = req.headers.get('Authorization');
-    console.log('Auth header present:', !!authHeader); // Debug log
+    console.log('Auth header present:', !!authHeader);
 
     if (!authHeader) {
       throw new Error('No authorization header');
     }
 
-    // Get the JWT token
     const token = authHeader.replace('Bearer ', '');
     
-    // Get the user from the token using the admin client
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-    console.log('User lookup result:', { user: !!user, error: userError }); // Debug log
+    console.log('User lookup result:', { user: !!user, error: userError });
     
-    if (userError || !user) {
+    if (userError) {
       console.error('User error:', userError);
       throw new Error('Failed to authenticate user');
     }
 
-    if (!user.email) {
-      throw new Error('User email not found');
-    }
-
-    console.log('Found user email:', user.email); // Debug log
-
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-      apiVersion: '2023-10-16',
-    });
-
-    // Find customer by email
-    const customers = await stripe.customers.list({
-      email: user.email,
-      limit: 1,
-    });
-
-    if (!customers.data.length) {
-      console.log('No Stripe customer found for email:', user.email); // Debug log
+    if (!user || !user.email) {
+      console.log('No user or email found');
       return new Response(
         JSON.stringify({ isSubscribed: false }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check for active subscriptions
+    console.log('Processing subscription check for:', user.email);
+
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+      apiVersion: '2023-10-16',
+    });
+
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    });
+
+    if (!customers.data.length) {
+      console.log('No Stripe customer found for email:', user.email);
+      return new Response(
+        JSON.stringify({ isSubscribed: false }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const subscriptions = await stripe.subscriptions.list({
       customer: customers.data[0].id,
       status: 'active',
@@ -72,8 +69,9 @@ serve(async (req) => {
     });
 
     console.log('Subscription check complete:', { 
-      hasSubscription: subscriptions.data.length > 0 
-    }); // Debug log
+      hasSubscription: subscriptions.data.length > 0,
+      customerId: customers.data[0].id
+    });
 
     return new Response(
       JSON.stringify({ 

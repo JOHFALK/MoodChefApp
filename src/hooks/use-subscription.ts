@@ -6,22 +6,15 @@ export function useSubscription() {
     queryKey: ['subscription'],
     queryFn: async () => {
       try {
-        // Get the current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          return { isSubscribed: false };
-        }
-
         if (!session) {
           console.log('No active session found');
           return { isSubscribed: false };
         }
 
-        console.log('Session found:', session.user.id); // Debug log
+        console.log('Using session for user:', session.user.id);
 
-        // Call the edge function with the session token
         const { data, error } = await supabase.functions.invoke('check-subscription', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
