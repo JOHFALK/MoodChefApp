@@ -37,7 +37,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
         setDebugInfo(prev => `${prev}\nApplying emotion filter: ${selectedEmotions.join(', ')}`);
-        // Using && to ensure all emotions are present
+        // Filter recipes that contain ALL selected emotions
         selectedEmotions.forEach(emotion => {
           query = query.contains('emotions', [emotion]);
         });
@@ -46,6 +46,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
         setDebugInfo(prev => `${prev}\nApplying ingredient filter: ${ingredients.join(', ')}`);
+        // Filter recipes that contain ALL selected ingredients
         ingredients.forEach(ingredient => {
           query = query.contains('ingredients', [ingredient]);
         });
@@ -55,11 +56,12 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       
       if (error) {
         setDebugInfo(prev => `${prev}\nError: ${error.message}`);
+        console.error('Query error:', error);
         throw error;
       }
 
       setDebugInfo(prev => `${prev}\nFound ${data?.length || 0} recipes`);
-      console.log('Query response:', data); // Add this for debugging
+      console.log('Query response:', data);
 
       return (data || []).map(recipe => ({
         id: recipe.id,
