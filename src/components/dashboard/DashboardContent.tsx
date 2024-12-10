@@ -10,6 +10,7 @@ import { MoodAnalytics } from "./MoodAnalytics";
 import { WelcomeMessage } from "./WelcomeMessage";
 import { QuickActions } from "./QuickActions";
 import { NotificationCenter } from "./NotificationCenter";
+import { RoleManager } from "./community/RoleManager";
 
 export function DashboardContent() {
   const [loading, setLoading] = useState(true);
@@ -142,6 +143,7 @@ export function DashboardContent() {
       {isAdmin && (
         <div className="space-y-8">
           <AdminControls />
+          <RoleManager />
           <BattleManager />
           <UserManagement />
         </div>

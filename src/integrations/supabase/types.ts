@@ -254,6 +254,44 @@ export type Database = {
           },
         ]
       }
+      forum_rules: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_rules_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_topics: {
         Row: {
           category_id: string | null
@@ -313,6 +351,68 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moderation_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          moderator_id: string
+          reason: string | null
+          reply_id: string | null
+          target_user_id: string | null
+          topic_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          moderator_id: string
+          reason?: string | null
+          reply_id?: string | null
+          target_user_id?: string | null
+          topic_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          moderator_id?: string
+          reason?: string | null
+          reply_id?: string | null
+          target_user_id?: string | null
+          topic_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_actions_moderator_id_fkey"
+            columns: ["moderator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_actions_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: false
+            referencedRelation: "forum_replies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_actions_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_actions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "forum_topics"
             referencedColumns: ["id"]
           },
         ]
@@ -468,6 +568,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_admin: boolean | null
+          is_moderator: boolean | null
           is_premium: boolean | null
           mood_points: number | null
           premium_until: string | null
@@ -484,6 +585,7 @@ export type Database = {
           display_name?: string | null
           id: string
           is_admin?: boolean | null
+          is_moderator?: boolean | null
           is_premium?: boolean | null
           mood_points?: number | null
           premium_until?: string | null
@@ -500,6 +602,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_admin?: boolean | null
+          is_moderator?: boolean | null
           is_premium?: boolean | null
           mood_points?: number | null
           premium_until?: string | null
