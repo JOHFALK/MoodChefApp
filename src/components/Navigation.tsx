@@ -45,13 +45,11 @@ export function Navigation() {
       
       if (event === 'SIGNED_OUT') {
         setUser(null);
-        if (location.pathname !== '/login') {
-          navigate('/login');
-          toast({
-            title: "Session ended",
-            description: "Please sign in again to continue.",
-          });
-        }
+        navigate('/login');
+        toast({
+          title: "Signed out successfully",
+          description: "You have been logged out of your account.",
+        });
       } else if (session?.user) {
         setUser(session.user);
       }
@@ -78,16 +76,7 @@ export function Navigation() {
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-        setUser(null);
-        navigate("/login");
-        toast({
-          title: "Signed out",
-          description: "You have been signed out of your account.",
-        });
-        return;
-      }
+      if (error) throw error;
       
       navigate("/login");
       toast({
@@ -95,11 +84,10 @@ export function Navigation() {
       });
     } catch (error) {
       console.error('Sign out error:', error);
-      setUser(null);
-      navigate("/login");
       toast({
-        title: "Signed out",
-        description: "You have been signed out of your account.",
+        title: "Error signing out",
+        description: "An error occurred while signing out.",
+        variant: "destructive",
       });
     }
   };
