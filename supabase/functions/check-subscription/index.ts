@@ -13,11 +13,13 @@ serve(async (req) => {
   }
 
   try {
+    // Initialize Supabase client with admin privileges
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
+    // Get the authorization header
     const authHeader = req.headers.get('Authorization');
     console.log('Auth header present:', !!authHeader);
 
@@ -25,58 +27,61 @@ serve(async (req) => {
       throw new Error('No authorization header');
     }
 
+    // Get user from the JWT token
     const token = authHeader.replace('Bearer ', '');
-    
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-    console.log('User lookup result:', { user: !!user, error: userError });
     
-    if (userError) {
-      console.error('User error:', userError);
-      throw new Error('Failed to authenticate user');
-    }
+    console.log('User lookup result:', { 
+      userFound: !!user, 
+      error: userError?.message 
+    });
 
-    if (!user || !user.email) {
-      console.log('No user or email found');
+    if (userError || !user) {
+      console.error('User authentication failed:', userError);
       return new Response(
-        JSON.stringify({ isSubscribed: false }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Failed to authenticate user' }),
+        { 
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
       );
     }
 
-    console.log('Processing subscription check for:', user.email);
-
+    // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
       apiVersion: '2023-10-16',
     });
 
+    console.log('Checking subscription for user:', user.email);
+
+    // Get Stripe customer
     const customers = await stripe.customers.list({
       email: user.email,
       limit: 1,
     });
 
     if (!customers.data.length) {
-      console.log('No Stripe customer found for email:', user.email);
+      console.log('No Stripe customer found for:', user.email);
       return new Response(
         JSON.stringify({ isSubscribed: false }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Check for active subscription
     const subscriptions = await stripe.subscriptions.list({
       customer: customers.data[0].id,
       status: 'active',
       limit: 1,
     });
 
-    console.log('Subscription check complete:', { 
+    console.log('Subscription check complete:', {
       hasSubscription: subscriptions.data.length > 0,
       customerId: customers.data[0].id
     });
 
     return new Response(
-      JSON.stringify({ 
-        isSubscribed: subscriptions.data.length > 0,
-      }),
+      JSON.stringify({ isSubscribed: subscriptions.data.length > 0 }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -85,7 +90,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        status: 400,
+        status: error.message.includes('authenticate') ? 401 : 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );

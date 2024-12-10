@@ -21,18 +21,29 @@ export function Navigation() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
 
+    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      
+      // If session is lost and user was on a protected route, redirect to login
+      if (!session && location.pathname !== '/login') {
+        navigate('/login');
+        toast({
+          title: "Session expired",
+          description: "Please sign in again to continue.",
+        });
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate, location.pathname]);
 
   const handleAddRecipe = () => {
     if (!user) {
@@ -67,17 +78,22 @@ export function Navigation() {
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        console.error('Sign out error:', error);
+        throw error;
+      }
       navigate("/login");
       toast({
         title: "Signed out successfully",
       });
     } catch (error) {
       console.error('Sign out error:', error);
+      // Even if sign out fails, clear local state and redirect
+      setUser(null);
+      navigate("/login");
       toast({
-        title: "Error signing out",
-        description: "Please try again",
-        variant: "destructive",
+        title: "Signed out",
+        description: "You have been signed out of your account.",
       });
     }
   };

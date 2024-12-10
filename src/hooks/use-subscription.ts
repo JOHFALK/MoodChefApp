@@ -23,6 +23,10 @@ export function useSubscription() {
 
         if (error) {
           console.error('Subscription check error:', error);
+          // If authentication failed, return false instead of throwing
+          if (error.message.includes('authenticate') || error.status === 401) {
+            return { isSubscribed: false };
+          }
           throw error;
         }
 
@@ -33,5 +37,7 @@ export function useSubscription() {
       }
     },
     retry: false,
+    // Refresh subscription status every 5 minutes
+    refetchInterval: 5 * 60 * 1000,
   });
 }
