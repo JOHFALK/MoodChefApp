@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Users, ThumbsUp, Lock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { RecipeInteractionForm } from "./RecipeInteractionForm";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useSubscription } from "@/hooks/use-subscription";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
+import { RecipeHeader } from "./recipe/RecipeHeader";
+import { RecipeDetails } from "./recipe/RecipeDetails";
+import { PremiumDialog } from "./recipe/PremiumDialog";
 
 interface Recipe {
   id: string;
@@ -44,26 +44,23 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('recipe_votes')
-        .select('id')
-        .eq('recipe_id', recipe.id)
-        .eq('user_id', session.user.id)
-        .maybeSingle();
+    const { data, error } = await supabase
+      .from('recipe_votes')
+      .select('id')
+      .eq('recipe_id', recipe.id)
+      .eq('user_id', session.user.id)
+      .maybeSingle();
 
-      if (error) {
-        console.error('Error checking vote:', error);
-        return;
-      }
-
-      setHasVoted(!!data);
-    } catch (error) {
+    if (error) {
       console.error('Error checking vote:', error);
+      return;
     }
+
+    setHasVoted(!!data);
   };
 
-  const handleVote = async () => {
+  const handleVote = async (e: React.MouseEvent) => {
+    e.preventDefault();
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast({
@@ -75,42 +72,31 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
     try {
       if (hasVoted) {
-        // Remove vote
-        const { error: deleteError } = await supabase
+        await supabase
           .from('recipe_votes')
           .delete()
           .eq('recipe_id', recipe.id)
           .eq('user_id', session.user.id);
 
-        if (deleteError) throw deleteError;
-
-        const { error: updateError } = await supabase
+        await supabase
           .from('recipes')
           .update({ votes: votes - 1 })
           .eq('id', recipe.id);
 
-        if (updateError) throw updateError;
-
         setVotes(prev => prev - 1);
         setHasVoted(false);
       } else {
-        // Add vote
-        const { error: insertError } = await supabase
+        await supabase
           .from('recipe_votes')
           .insert({
             recipe_id: recipe.id,
             user_id: session.user.id,
-            created_at: new Date().toISOString()
           });
 
-        if (insertError) throw insertError;
-
-        const { error: updateError } = await supabase
+        await supabase
           .from('recipes')
           .update({ votes: votes + 1 })
           .eq('id', recipe.id);
-
-        if (updateError) throw updateError;
 
         setVotes(prev => prev + 1);
         setHasVoted(true);
@@ -140,56 +126,31 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <>
       <Card 
-        className={`w-full transition-all hover:shadow-lg relative ${
+        className={`h-full flex flex-col transition-all hover:shadow-lg relative ${
           recipe.is_premium && !isPremium ? 'cursor-pointer' : ''
         }`}
         onClick={handleRecipeClick}
       >
-        <Link to={`/recipe/${recipe.id}`} className={recipe.is_premium && !isPremium ? 'pointer-events-none' : ''}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">{recipe.title}</CardTitle>
-              {recipe.is_premium && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Lock className="w-3 h-3" />
-                  Premium
-                </Badge>
-              )}
-            </div>
-            <CardDescription className="flex flex-wrap gap-2">
-              {recipe.emotions.map((emotion) => (
-                <Badge key={emotion} variant="secondary">
-                  {emotion}
-                </Badge>
-              ))}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className={`space-y-4 ${recipe.is_premium && !isPremium ? 'blur-[2px]' : ''}`}>
-            <p className="text-muted-foreground">{recipe.description}</p>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{recipe.cookingTime} mins</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  <span>{recipe.servings} servings</span>
-                </div>
-              </div>
-              <Button
-                variant={hasVoted ? "secondary" : "outline"}
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleVote();
-                }}
-                className="flex items-center gap-2"
-              >
-                <ThumbsUp className={`w-4 h-4 ${hasVoted ? "fill-current" : ""}`} />
-                <span>{votes}</span>
-              </Button>
-            </div>
+        <Link 
+          to={`/recipe/${recipe.id}`} 
+          className={`h-full flex flex-col ${recipe.is_premium && !isPremium ? 'pointer-events-none' : ''}`}
+        >
+          <RecipeHeader 
+            title={recipe.title}
+            emotions={recipe.emotions}
+            isPremium={recipe.is_premium || false}
+          />
+          
+          <CardContent className={`flex-1 flex flex-col ${recipe.is_premium && !isPremium ? 'blur-[2px]' : ''}`}>
+            <p className="text-muted-foreground line-clamp-3 flex-1">{recipe.description}</p>
+            
+            <RecipeDetails 
+              cookingTime={recipe.cookingTime}
+              servings={recipe.servings}
+              votes={votes}
+              hasVoted={hasVoted}
+              onVote={handleVote}
+            />
             
             {showInteractionForm ? (
               <RecipeInteractionForm 
@@ -199,7 +160,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             ) : (
               <Button 
                 variant="outline" 
-                className="w-full"
+                className="w-full mt-4"
                 onClick={(e) => {
                   e.preventDefault();
                   setShowInteractionForm(true);
@@ -212,24 +173,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </Link>
       </Card>
 
-      <Dialog open={showPremiumDialog} onOpenChange={setShowPremiumDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Premium Recipe</DialogTitle>
-            <DialogDescription>
-              This delicious recipe is available exclusively to our premium members. Upgrade your account to unlock this and many other premium recipes!
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-4 mt-4">
-            <Button variant="outline" onClick={() => setShowPremiumDialog(false)}>
-              Maybe Later
-            </Button>
-            <Button onClick={() => navigate("/pricing")}>
-              Upgrade to Premium
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PremiumDialog 
+        open={showPremiumDialog}
+        onOpenChange={setShowPremiumDialog}
+        onUpgrade={() => navigate("/pricing")}
+      />
     </>
   );
 }
