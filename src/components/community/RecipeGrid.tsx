@@ -14,39 +14,31 @@ interface Recipe {
   votes: number;
 }
 
-interface RecipeWithProfile {
-  id: string;
-  title: string;
-  description: string | null;
-  cooking_time: number | null;
-  emotions: string[];
-  ingredients: string[];
-  votes: number | null;
-  profiles: {
-    display_name: string | null;
-    avatar_url: string | null;
-  } | null;
-}
-
 export function RecipeGrid() {
   const { data: recipes, isLoading } = useQuery({
     queryKey: ['community-recipes'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('recipes')
-        .select(`
-          *,
-          profiles (
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('status', 'approved')
-        .not('user_id', 'is', null) // Changed this line to use proper null check syntax
         .order('votes', { ascending: false });
       
-      if (error) throw error;
-      return data as RecipeWithProfile[];
+      if (error) {
+        console.error('Error fetching recipes:', error);
+        throw error;
+      }
+
+      return (data || []).map(recipe => ({
+        id: recipe.id,
+        title: recipe.title,
+        description: recipe.description || '',
+        cookingTime: recipe.cooking_time || 0,
+        servings: 2,
+        emotions: recipe.emotions,
+        ingredients: recipe.ingredients,
+        votes: recipe.votes || 0
+      }));
     },
   });
 
@@ -65,16 +57,7 @@ export function RecipeGrid() {
       {recipes?.map((recipe) => (
         <RecipeCard 
           key={recipe.id} 
-          recipe={{
-            id: recipe.id,
-            title: recipe.title,
-            description: recipe.description || '',
-            cookingTime: recipe.cooking_time || 0,
-            servings: 2, // Default value since it's not in the database
-            emotions: recipe.emotions,
-            ingredients: recipe.ingredients,
-            votes: recipe.votes || 0
-          }} 
+          recipe={recipe}
         />
       ))}
     </div>
