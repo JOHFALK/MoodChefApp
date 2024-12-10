@@ -27,6 +27,11 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ['recipes', selectedEmotions, ingredients],
     queryFn: async () => {
+      console.log('Starting recipe search with:', {
+        selectedEmotions,
+        ingredients
+      });
+
       setDebugInfo(`Starting search with emotions: ${selectedEmotions.join(', ')} and ingredients: ${ingredients.join(', ')}`);
 
       let query = supabase
@@ -34,30 +39,41 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         .select('*')
         .eq('status', 'approved');
 
+      console.log('Base query created');
+
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
+        console.log('Applying emotion filter:', selectedEmotions);
         setDebugInfo(prev => `${prev}\nApplying emotion filter: ${selectedEmotions.join(', ')}`);
-        // We want recipes that contain ANY of the selected emotions
-        query = query.contains('emotions', selectedEmotions);
+        
+        // Apply filters for each emotion individually
+        selectedEmotions.forEach(emotion => {
+          query = query.contains('emotions', [emotion]);
+        });
       }
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
+        console.log('Applying ingredient filter:', ingredients);
         setDebugInfo(prev => `${prev}\nApplying ingredient filter: ${ingredients.join(', ')}`);
-        // We want recipes that contain ANY of the selected ingredients
-        query = query.contains('ingredients', ingredients);
+        
+        // Apply filters for each ingredient individually
+        ingredients.forEach(ingredient => {
+          query = query.contains('ingredients', [ingredient]);
+        });
       }
 
+      console.log('Executing query...');
       const { data, error } = await query;
       
       if (error) {
-        setDebugInfo(prev => `${prev}\nError: ${error.message}`);
         console.error('Query error:', error);
+        setDebugInfo(prev => `${prev}\nError: ${error.message}`);
         throw error;
       }
 
+      console.log('Query results:', data);
       setDebugInfo(prev => `${prev}\nFound ${data?.length || 0} recipes`);
-      console.log('Query response:', data);
 
       return (data || []).map(recipe => ({
         id: recipe.id,
