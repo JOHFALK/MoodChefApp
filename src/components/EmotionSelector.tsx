@@ -108,19 +108,11 @@ interface EmotionSelectorProps {
 }
 
 export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSelectorProps) {
-  const { toast } = useToast();
-
   const handleEmotionSelect = (emotion: string) => {
     if (selectedEmotions.includes(emotion)) {
       onEmotionSelect(emotion); // Will remove it
-    } else if (selectedEmotions.length < 2) {
-      onEmotionSelect(emotion); // Will add it
     } else {
-      toast({
-        title: "Maximum emotions selected",
-        description: "You can select up to 2 emotions to find the perfect recipe",
-        variant: "default",
-      });
+      onEmotionSelect(emotion); // Will select only this emotion
     }
   };
 
@@ -135,7 +127,7 @@ export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSe
           How are you feeling today?
         </h2>
         <p className="text-muted-foreground">
-          Select up to 2 emotions to find recipes that match your mood
+          Select an emotion to find recipes that match your mood
         </p>
       </motion.div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
@@ -181,7 +173,7 @@ export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSe
             className="mt-6 text-center"
           >
             <span className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              Selected: {selectedEmotions.join(" + ")}
+              Selected: {selectedEmotions[0]}
             </span>
           </motion.div>
         )}

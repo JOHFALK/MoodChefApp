@@ -34,19 +34,10 @@ export default function Index() {
   const handleEmotionSelect = (emotion: string) => {
     setSelectedEmotions(prev => {
       if (prev.includes(emotion)) {
-        return prev.filter(e => e !== emotion);
+        return [];
       }
-      if (prev.length < 2) {
-        return [...prev, emotion];
-      }
-      return prev;
+      return [emotion];
     });
-    setShowResults(true);
-  };
-
-  const handleSearch = (emotions: string[], searchIngredients: string[]) => {
-    setSelectedEmotions(emotions);
-    setIngredients(searchIngredients);
     setShowResults(true);
   };
 
