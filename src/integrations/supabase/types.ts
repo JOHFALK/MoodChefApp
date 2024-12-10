@@ -781,7 +781,23 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      achievement_type:
+        | "first_battle_win"
+        | "win_streak"
+        | "recipe_count"
+        | "battle_participation"
+        | "perfect_score"
+        | "community_engagement"
+        | "cooking_streak"
+        | "mood_tracking"
+        | "seasonal_champion"
+      badge_type:
+        | "battle_winner"
+        | "battle_master"
+        | "recipe_creator"
+        | "community_star"
+        | "mood_master"
+        | "streak_champion"
     }
     CompositeTypes: {
       [_ in never]: never
