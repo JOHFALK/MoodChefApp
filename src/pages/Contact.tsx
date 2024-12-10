@@ -6,28 +6,35 @@ import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Contact() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useSession();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      message: formData.get('message'),
-      type: formData.get('type')
+    const messageData = {
+      title: `${formData.get('type')} Inquiry`,
+      message: formData.get('message') as string,
+      user_id: user?.id || null,
+      type: 'contact',
+      data: {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        inquiry_type: formData.get('type')
+      }
     };
 
     try {
       const { error } = await supabase
-        .from('contact_messages')
-        .insert([data]);
+        .from('notifications')
+        .insert([messageData]);
 
       if (error) throw error;
 

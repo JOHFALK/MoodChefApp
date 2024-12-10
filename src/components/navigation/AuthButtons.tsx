@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,14 +9,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
+import { useSession } from "@/hooks/use-session";
+import { supabase } from "@/integrations/supabase/client";
 
-interface AuthButtonsProps {
-  user: any;
-  onSignOut: () => Promise<void>;
-}
-
-export function AuthButtons({ user, onSignOut }: AuthButtonsProps) {
+export function AuthButtons() {
   const navigate = useNavigate();
+  const { user } = useSession();
+  const { toast } = useToast();
+  
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error signing out",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
   
   return user ? (
     <DropdownMenu>
@@ -34,7 +47,7 @@ export function AuthButtons({ user, onSignOut }: AuthButtonsProps) {
           Dashboard
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onSignOut}>
+        <DropdownMenuItem onClick={handleSignOut}>
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
