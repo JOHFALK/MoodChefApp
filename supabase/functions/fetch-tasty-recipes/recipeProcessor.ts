@@ -1,12 +1,14 @@
 import { emotionMappingRules } from './emotionMapping.ts';
 
 function cleanInstructions(instructions: any[]): string[] {
+  if (!Array.isArray(instructions)) return [];
   return instructions
     .map(instruction => instruction.display_text)
     .filter(text => text && text.trim().length > 0);
 }
 
 function cleanIngredients(sections: any[]): string[] {
+  if (!Array.isArray(sections)) return [];
   return sections
     .flatMap(section => section.components || [])
     .map(component => component.raw_text)
@@ -23,17 +25,25 @@ function generateDescription(recipe: any): string {
 }
 
 export async function processRecipes(recipes: any[], neededRecipes: Map<string, number>) {
+  console.log('Processing recipes:', recipes.length);
   const processedRecipes = [];
-  const emotionAssignments = new Map();
-  const maxRecipesPerEmotion = 15; // Set a maximum cap per emotion
-  const minRecipesPerEmotion = 10; // Set a minimum threshold per emotion
 
   // First pass: Calculate emotion matches for all recipes
-  const recipeEmotions = recipes.map(recipe => {
+  for (const recipe of recipes) {
     if (!recipe.name || !recipe.sections || !recipe.instructions) {
-      return null;
+      console.log('Skipping invalid recipe:', recipe.name);
+      continue;
     }
 
+    // Log recipe details for debugging
+    console.log('Processing recipe:', {
+      name: recipe.name,
+      tags: recipe.tags?.map(t => t.name),
+      hasInstructions: Boolean(recipe.instructions),
+      hasSections: Boolean(recipe.sections)
+    });
+
+    // Calculate matching emotions
     const emotionScores = Object.entries(emotionMappingRules)
       .map(([emotion, rule]) => {
         const { match, score } = rule(recipe);
@@ -42,34 +52,9 @@ export async function processRecipes(recipes: any[], neededRecipes: Map<string, 
       .filter(result => result.match)
       .sort((a, b) => b.score - a.score);
 
-    return { recipe, emotionScores };
-  }).filter(Boolean);
-
-  // Second pass: Distribute recipes evenly
-  const validEmotions = ['Happy', 'Sad', 'Energetic', 'Calm', 'Tired', 'Anxious', 'Excited', 'Bored', 'Motivated', 'Angry', 'Confident', 'Stressed'];
-  
-  // Initialize counters for each emotion
-  const emotionCounts = new Map(validEmotions.map(emotion => [emotion, 0]));
-
-  // Distribute recipes while maintaining balance
-  for (const recipeData of recipeEmotions) {
-    if (!recipeData) continue;
-
-    const { recipe, emotionScores } = recipeData;
-    
-    // Find the emotion with the lowest count that matches this recipe
-    const eligibleEmotions = emotionScores
-      .filter(({ emotion }) => 
-        validEmotions.includes(emotion) && 
-        emotionCounts.get(emotion)! < maxRecipesPerEmotion
-      )
-      .sort((a, b) => 
-        (emotionCounts.get(a.emotion) || 0) - (emotionCounts.get(b.emotion) || 0)
-      );
-
-    if (eligibleEmotions.length > 0) {
-      const selectedEmotion = eligibleEmotions[0].emotion;
-      emotionCounts.set(selectedEmotion, (emotionCounts.get(selectedEmotion) || 0) + 1);
+    if (emotionScores.length > 0) {
+      const selectedEmotion = emotionScores[0].emotion;
+      console.log('Recipe matched emotion:', selectedEmotion, 'for recipe:', recipe.name);
 
       processedRecipes.push({
         title: recipe.name,
@@ -82,20 +67,20 @@ export async function processRecipes(recipes: any[], neededRecipes: Map<string, 
         status: 'approved',
         is_premium: Math.random() < 0.3 // 30% chance of being premium
       });
+    } else {
+      console.log('No emotion matches found for recipe:', recipe.name);
     }
   }
 
   // Log distribution statistics
-  console.log('Final emotion distribution:');
-  for (const [emotion, count] of emotionCounts) {
-    console.log(`${emotion}: ${count} recipes`);
-  }
+  const emotionCounts = processedRecipes.reduce((acc, recipe) => {
+    recipe.emotions.forEach(emotion => {
+      acc[emotion] = (acc[emotion] || 0) + 1;
+    });
+    return acc;
+  }, {});
 
-  // Verify balance
-  const counts = Array.from(emotionCounts.values());
-  const maxCount = Math.max(...counts);
-  const minCount = Math.min(...counts);
-  console.log(`Distribution ratio (max/min): ${maxCount/minCount}`);
+  console.log('Final emotion distribution:', emotionCounts);
 
   return processedRecipes;
 }
