@@ -33,7 +33,8 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ['recipes', selectedEmotions, ingredients],
     queryFn: async () => {
-      console.log('Selected emotions:', selectedEmotions); // Debug log
+      console.log('Query started with emotions:', selectedEmotions);
+      console.log('Query started with ingredients:', ingredients);
 
       let query = supabase
         .from('recipes')
@@ -42,27 +43,32 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
 
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
-        // Convert emotion to lowercase for case-insensitive comparison
         const emotion = selectedEmotions[0].toLowerCase();
+        console.log('Filtering by normalized emotion:', emotion);
+        
+        // Modified query to handle case-insensitive array contains
         query = query.contains('emotions', [emotion]);
-        console.log('Filtering by emotion:', emotion); // Debug log
+        
+        const { data: testQuery, error: testError } = await query;
+        console.log('Test query results:', testQuery);
+        console.log('Test query error:', testError);
       }
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
         ingredients.forEach(ingredient => {
-          query = query.contains('ingredients', [ingredient]);
+          query = query.contains('ingredients', [ingredient.toLowerCase()]);
         });
       }
 
       const { data, error } = await query;
       
       if (error) {
-        console.error('Supabase query error:', error); // Debug log
+        console.error('Supabase query error:', error);
         throw error;
       }
 
-      console.log('Query results:', data); // Debug log
+      console.log('Final query results:', data);
 
       return (data || []).map(recipe => ({
         id: recipe.id,
@@ -70,7 +76,9 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         description: recipe.description || '',
         cookingTime: recipe.cooking_time || 0,
         servings: 2,
-        emotions: recipe.emotions?.map(e => e.charAt(0).toUpperCase() + e.slice(1).toLowerCase()) || [],
+        emotions: recipe.emotions?.map((e: string) => 
+          e.charAt(0).toUpperCase() + e.slice(1).toLowerCase()
+        ) || [],
         ingredients: recipe.ingredients || [],
         votes: recipe.votes || 0,
         is_premium: recipe.is_premium || false
