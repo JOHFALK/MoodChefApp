@@ -9,10 +9,10 @@ export function CommunityHeader() {
 
   const stats = [
     { 
-      label: "Success Stories", 
-      value: "500+", 
+      label: "Recipe Stories", 
+      value: "1.2K+", 
       icon: Trophy,
-      description: "Mood-boosting recipes shared"
+      description: "Emotional transformations"
     },
     { 
       label: "Recipe Categories", 
