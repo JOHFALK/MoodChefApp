@@ -126,7 +126,7 @@ export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSe
         <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           How are you feeling today?
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-foreground font-medium">
           Select an emotion to find recipes that match your mood
         </p>
       </motion.div>
@@ -143,7 +143,7 @@ export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSe
               className={cn(
                 "h-24 w-full flex flex-col items-center justify-center gap-2 transition-all duration-300",
                 emotion.bgColor,
-                emotion.color,
+                "text-foreground font-medium",
                 selectedEmotions.includes(emotion.name) && 
                 "ring-2 ring-primary shadow-lg scale-105",
                 "hover:scale-105 hover:shadow-md group"
@@ -153,12 +153,18 @@ export function EmotionSelector({ selectedEmotions, onEmotionSelect }: EmotionSe
               <motion.div
                 initial={{ scale: 1 }}
                 whileHover={{ scale: 1.1 }}
-                className="transition-colors group-hover:text-primary"
+                className={cn(
+                  "transition-colors group-hover:text-primary",
+                  emotion.color
+                )}
               >
                 {emotion.icon}
               </motion.div>
               <span className="text-sm font-medium group-hover:text-primary transition-colors">
                 {emotion.name}
+              </span>
+              <span className="text-xs text-foreground/80">
+                {emotion.description}
               </span>
             </Button>
           </motion.div>
