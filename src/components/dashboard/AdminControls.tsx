@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, CheckCircle2, XCircle } from "lucide-react";
+import { Shield, CheckCircle2, XCircle, Users, Crown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,25 @@ import { Badge } from "@/components/ui/badge";
 export function AdminControls() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: userStats } = useQuery({
+    queryKey: ['user-stats'],
+    queryFn: async () => {
+      const { count: totalUsers } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: premiumUsers } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_premium', true);
+
+      return {
+        totalUsers: totalUsers || 0,
+        premiumUsers: premiumUsers || 0,
+      };
+    },
+  });
 
   const { data: pendingRecipes, refetch } = useQuery({
     queryKey: ['pending-recipes'],
@@ -91,10 +110,38 @@ export function AdminControls() {
           <CardTitle>Admin Controls</CardTitle>
         </div>
         <CardDescription>
-          Manage pending recipe submissions
+          Manage pending recipe submissions and view user statistics
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">Total Users</span>
+                </div>
+                <Badge variant="secondary" className="text-lg">
+                  {userStats?.totalUsers || 0}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">Premium Users</span>
+                </div>
+                <Badge variant="secondary" className="text-lg">
+                  {userStats?.premiumUsers || 0}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         <div className="space-y-4">
           {pendingRecipes?.length === 0 ? (
             <p className="text-muted-foreground text-center py-4">
