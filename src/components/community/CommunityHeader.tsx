@@ -1,15 +1,31 @@
 import { motion } from "framer-motion";
-import { ChefHat, TrendingUp, Award, Search, PlusCircle, Users, Heart } from "lucide-react";
+import { ChefHat, TrendingUp, Award, Search, PlusCircle, Users, Heart, Sparkles, Trophy, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function CommunityHeader() {
   const navigate = useNavigate();
 
   const stats = [
-    { label: "Active Members", value: "2.4k", icon: Users },
-    { label: "Recipes Shared", value: "15k", icon: ChefHat },
-    { label: "Daily Interactions", value: "5.2k", icon: Heart },
+    { 
+      label: "Success Stories", 
+      value: "500+", 
+      icon: Trophy,
+      description: "Mood-boosting recipes shared"
+    },
+    { 
+      label: "Recipe Categories", 
+      value: "25+", 
+      icon: Star,
+      description: "Unique emotional cuisines"
+    },
+    { 
+      label: "Happy Cooks", 
+      value: "98%", 
+      icon: Sparkles,
+      description: "Reported mood improvement"
+    },
   ];
 
   return (
@@ -63,7 +79,8 @@ export function CommunityHeader() {
           >
             <stat.icon className="w-8 h-8 text-primary mx-auto mb-2" />
             <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-            <div className="text-sm text-muted-foreground">{stat.label}</div>
+            <div className="text-sm font-medium text-foreground mb-1">{stat.label}</div>
+            <div className="text-xs text-muted-foreground">{stat.description}</div>
           </motion.div>
         ))}
       </motion.div>
@@ -82,10 +99,45 @@ export function CommunityHeader() {
           <PlusCircle className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
           Share Recipe
         </Button>
-        <Button variant="outline" className="group border-primary/20">
-          <TrendingUp className="w-4 h-4 mr-2 text-primary group-hover:scale-110 transition-transform" />
-          Trending
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="group border-primary/20">
+              <TrendingUp className="w-4 h-4 mr-2 text-primary group-hover:scale-110 transition-transform" />
+              Create Topic
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Unlock Full Community Access</DialogTitle>
+              <DialogDescription className="space-y-4 pt-4">
+                <p>
+                  As a free member, you can browse and participate in existing discussions. 
+                  Upgrade to Premium to unlock these exclusive features:
+                </p>
+                <ul className="list-none space-y-3">
+                  <li className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    Create new topics in any category
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-yellow-500" />
+                    Access premium recipe categories
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-yellow-500" />
+                    Join exclusive cooking challenges
+                  </li>
+                </ul>
+                <Button 
+                  className="w-full mt-4"
+                  onClick={() => navigate("/pricing")}
+                >
+                  Upgrade to Premium
+                </Button>
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
         <Button variant="outline" className="group border-primary/20">
           <Award className="w-4 h-4 mr-2 text-primary group-hover:scale-110 transition-transform" />
           Top Rated
