@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client with service role key
+    // Initialize Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -21,6 +21,7 @@ serve(async (req) => {
 
     // Get the authorization header
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader); // Debug log
 
     if (!authHeader) {
       throw new Error('No authorization header');
@@ -31,6 +32,7 @@ serve(async (req) => {
     
     // Get the user from the token using the admin client
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    console.log('User lookup result:', { user: !!user, error: userError }); // Debug log
     
     if (userError || !user) {
       console.error('User error:', userError);
@@ -40,6 +42,8 @@ serve(async (req) => {
     if (!user.email) {
       throw new Error('User email not found');
     }
+
+    console.log('Found user email:', user.email); // Debug log
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
@@ -53,6 +57,7 @@ serve(async (req) => {
     });
 
     if (!customers.data.length) {
+      console.log('No Stripe customer found for email:', user.email); // Debug log
       return new Response(
         JSON.stringify({ isSubscribed: false }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -66,6 +71,10 @@ serve(async (req) => {
       limit: 1,
     });
 
+    console.log('Subscription check complete:', { 
+      hasSubscription: subscriptions.data.length > 0 
+    }); // Debug log
+
     return new Response(
       JSON.stringify({ 
         isSubscribed: subscriptions.data.length > 0,
@@ -74,7 +83,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error in check-subscription:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

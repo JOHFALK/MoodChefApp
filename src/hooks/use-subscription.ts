@@ -19,7 +19,9 @@ export function useSubscription() {
           return { isSubscribed: false };
         }
 
-        // Use the current session's access token
+        console.log('Session found:', session.user.id); // Debug log
+
+        // Call the edge function with the session token
         const { data, error } = await supabase.functions.invoke('check-subscription', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
