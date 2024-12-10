@@ -28,7 +28,7 @@ export function useSubscription() {
         });
 
         if (error) {
-          console.error('Subscription check error:', error);
+          console.error('Failed to check subscription:', error);
           // If authentication failed, return false instead of throwing
           if (error.message.includes('authenticate') || error.status === 401) {
             return { isSubscribed: false };

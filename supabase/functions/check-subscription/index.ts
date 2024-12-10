@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -19,18 +20,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Get the authorization header
+    // Get the JWT token from the Authorization header
     const authHeader = req.headers.get('Authorization');
-    console.log('Auth header present:', !!authHeader);
+    console.log('Auth header:', authHeader ? 'Present' : 'Missing');
 
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      throw new Error('No authorization header');
     }
 
     // Get user from the JWT token
@@ -43,14 +38,7 @@ serve(async (req) => {
     });
 
     if (userError || !user) {
-      console.error('User authentication failed:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to authenticate user' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      throw new Error('Failed to authenticate user');
     }
 
     // Initialize Stripe
@@ -93,8 +81,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in check-subscription:', error);
+    
+    // Return a proper error response with CORS headers
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        isSubscribed: false // Always include the expected response shape
+      }),
       { 
         status: error.message.includes('authenticate') ? 401 : 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
