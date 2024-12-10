@@ -24,9 +24,9 @@ export const emotionMappingRules = {
     
   'Calm': (recipe: any) => ({
     match: recipe.tags?.some((tag: any) => 
-      ['tea_time', 'soup', 'vegetarian', 'meditation', 'mindful_eating', 'herbs', 'light'].includes(tag.name)) ||
+      ['tea_time', 'soup', 'vegetarian', 'herbs', 'light'].includes(tag.name)) ||
       recipe.cook_time_minutes > 45,
-    score: calculateMatchScore(recipe, ['tea_time', 'soup', 'vegetarian', 'meditation', 'mindful_eating', 'herbs', 'light'])
+    score: calculateMatchScore(recipe, ['tea_time', 'soup', 'vegetarian', 'herbs', 'light'])
   }),
     
   'Tired': (recipe: any) => ({
@@ -36,12 +36,42 @@ export const emotionMappingRules = {
     score: calculateMatchScore(recipe, ['easy', 'quick', 'under_30_minutes', 'simple', '5_ingredients_or_less', 'microwave'])
   }),
 
-  'Stressed': (recipe: any) => ({
+  'Anxious': (recipe: any) => ({
     match: recipe.tags?.some((tag: any) => 
-      ['comfort_food', 'easy', 'chocolate', 'baking', 'meditation', 'relaxing'].includes(tag.name)) ||
+      ['comfort_food', 'easy', 'chocolate', 'baking', 'relaxing'].includes(tag.name)) ||
       recipe.description?.toLowerCase().includes('comfort') ||
       recipe.name?.toLowerCase().includes('comfort'),
-    score: calculateMatchScore(recipe, ['comfort_food', 'easy', 'chocolate', 'baking', 'meditation', 'relaxing'])
+    score: calculateMatchScore(recipe, ['comfort_food', 'easy', 'chocolate', 'baking', 'relaxing'])
+  }),
+
+  'Excited': (recipe: any) => ({
+    match: recipe.tags?.some((tag: any) => 
+      ['party', 'celebration', 'appetizer', 'finger_food', 'fun'].includes(tag.name)),
+    score: calculateMatchScore(recipe, ['party', 'celebration', 'appetizer', 'finger_food', 'fun'])
+  }),
+
+  'Bored': (recipe: any) => ({
+    match: recipe.tags?.some((tag: any) => 
+      ['challenging', 'advanced', 'unique', 'exotic', 'fusion'].includes(tag.name)),
+    score: calculateMatchScore(recipe, ['challenging', 'advanced', 'unique', 'exotic', 'fusion'])
+  }),
+
+  'Motivated': (recipe: any) => ({
+    match: recipe.tags?.some((tag: any) => 
+      ['meal_prep', 'healthy', 'high_protein', 'keto', 'paleo'].includes(tag.name)),
+    score: calculateMatchScore(recipe, ['meal_prep', 'healthy', 'high_protein', 'keto', 'paleo'])
+  }),
+
+  'Confident': (recipe: any) => ({
+    match: recipe.tags?.some((tag: any) => 
+      ['gourmet', 'advanced', 'impressive', 'date_night'].includes(tag.name)),
+    score: calculateMatchScore(recipe, ['gourmet', 'advanced', 'impressive', 'date_night'])
+  }),
+
+  'Stressed': (recipe: any) => ({
+    match: recipe.tags?.some((tag: any) => 
+      ['comfort_food', 'easy', 'quick', 'simple', 'no_bake'].includes(tag.name)),
+    score: calculateMatchScore(recipe, ['comfort_food', 'easy', 'quick', 'simple', 'no_bake'])
   })
 };
 
