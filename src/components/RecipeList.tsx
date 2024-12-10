@@ -36,6 +36,15 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       console.log('Query started with emotions:', selectedEmotions);
       console.log('Query started with ingredients:', ingredients);
 
+      // First, let's check what recipes exist in the database
+      const { data: allRecipes, error: allRecipesError } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('status', 'approved');
+      
+      console.log('All approved recipes:', allRecipes);
+      console.log('All recipes error:', allRecipesError);
+
       let query = supabase
         .from('recipes')
         .select('*')
@@ -46,8 +55,8 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         const emotion = selectedEmotions[0].toLowerCase();
         console.log('Filtering by normalized emotion:', emotion);
         
-        // Use overlaps instead of contains to check if ANY element matches
-        query = query.overlaps('emotions', [emotion]);
+        // Use array_overlap to find recipes with matching emotions
+        query = query.filter('emotions', 'cs', `{${emotion}}`);
         
         const { data: testQuery, error: testError } = await query;
         console.log('Test query results:', testQuery);
@@ -57,7 +66,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
         ingredients.forEach(ingredient => {
-          query = query.overlaps('ingredients', [ingredient.toLowerCase()]);
+          query = query.filter('ingredients', 'cs', `{${ingredient.toLowerCase()}}`);
         });
       }
 
