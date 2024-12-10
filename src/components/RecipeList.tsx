@@ -37,19 +37,15 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
         setDebugInfo(prev => `${prev}\nApplying emotion filter: ${selectedEmotions.join(', ')}`);
-        // Filter recipes that contain ALL selected emotions
-        selectedEmotions.forEach(emotion => {
-          query = query.contains('emotions', [emotion]);
-        });
+        // We need to use containedBy instead of contains for array comparison
+        query = query.containedBy('emotions', selectedEmotions);
       }
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
         setDebugInfo(prev => `${prev}\nApplying ingredient filter: ${ingredients.join(', ')}`);
-        // Filter recipes that contain ALL selected ingredients
-        ingredients.forEach(ingredient => {
-          query = query.contains('ingredients', [ingredient]);
-        });
+        // We need to use containedBy instead of contains for array comparison
+        query = query.containedBy('ingredients', ingredients);
       }
 
       const { data, error } = await query;
