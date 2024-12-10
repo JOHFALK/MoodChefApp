@@ -46,8 +46,8 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         const emotion = selectedEmotions[0].toLowerCase();
         console.log('Filtering by normalized emotion:', emotion);
         
-        // Modified query to handle case-insensitive array contains
-        query = query.contains('emotions', [emotion]);
+        // Use overlaps instead of contains to check if ANY element matches
+        query = query.overlaps('emotions', [emotion]);
         
         const { data: testQuery, error: testError } = await query;
         console.log('Test query results:', testQuery);
@@ -57,7 +57,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
         ingredients.forEach(ingredient => {
-          query = query.contains('ingredients', [ingredient.toLowerCase()]);
+          query = query.overlaps('ingredients', [ingredient.toLowerCase()]);
         });
       }
 
