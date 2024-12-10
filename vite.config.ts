@@ -12,7 +12,8 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       // Handle HMR connections properly
       clientPort: 443,
-      protocol: 'wss'
+      protocol: 'wss',
+      host: '9ea3ff5b-92d9-4f8c-8794-a7ac4bab02d2.lovableproject.com'
     },
   },
   plugins: [

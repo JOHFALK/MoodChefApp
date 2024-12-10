@@ -19,6 +19,9 @@ export function useSession() {
           console.error('Session check error:', error);
           setUser(null);
           setSessionToken(null);
+          if (location.pathname !== '/login') {
+            navigate('/login');
+          }
           return;
         }
         
@@ -28,11 +31,16 @@ export function useSession() {
           if (location.pathname === '/login') {
             navigate('/dashboard');
           }
+        } else if (location.pathname !== '/login' && location.pathname !== '/') {
+          navigate('/login');
         }
       } catch (error) {
         console.error('Session check error:', error);
         setUser(null);
         setSessionToken(null);
+        if (location.pathname !== '/login') {
+          navigate('/login');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -45,10 +53,11 @@ export function useSession() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setSessionToken(null);
-        if (location.pathname !== '/login') {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        setUser(session?.user || null);
+        setSessionToken(session?.access_token || null);
+        
+        if (!session?.user && location.pathname !== '/login' && location.pathname !== '/') {
           navigate('/login');
           toast({
             title: "Session ended",
