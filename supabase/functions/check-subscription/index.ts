@@ -8,28 +8,46 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     );
 
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
 
-    if (!user?.email) {
+    // Get the JWT token
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Get the user from the token
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    
+    if (userError || !user) {
+      console.error('User error:', userError);
+      throw new Error('User not authenticated');
+    }
+
+    if (!user.email) {
+      console.error('No user email found');
       throw new Error('User email not found');
     }
 
+    // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
     });
 
+    // Get customer by email
     const customers = await stripe.customers.list({
       email: user.email,
       limit: 1,
@@ -42,6 +60,7 @@ serve(async (req) => {
       );
     }
 
+    // Check for active subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customers.data[0].id,
       status: 'active',
@@ -51,10 +70,15 @@ serve(async (req) => {
       JSON.stringify({ isSubscribed: subscriptions.data.length > 0 }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
+    console.error('Error in check-subscription:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400 
+      }
     );
   }
 });

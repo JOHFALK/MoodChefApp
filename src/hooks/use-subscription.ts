@@ -6,11 +6,30 @@ export function useSubscription() {
     queryKey: ['subscription'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return { isSubscribed: false };
+      
+      if (!session) {
+        console.log('No active session found');
+        return { isSubscribed: false };
+      }
 
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase.functions.invoke('check-subscription', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (error) {
+          console.error('Subscription check error:', error);
+          throw error;
+        }
+
+        return data;
+      } catch (error) {
+        console.error('Failed to check subscription:', error);
+        return { isSubscribed: false };
+      }
     },
+    retry: false,
   });
 }
