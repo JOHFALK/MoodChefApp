@@ -20,6 +20,7 @@ export function useSubscription() {
 
         console.log('Using session for user:', session.user.id);
 
+        // Make sure we're passing the access token in the Authorization header
         const { data, error } = await supabase.functions.invoke('check-subscription', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
