@@ -1,66 +1,17 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import { Logo } from "./navigation/Logo";
 import { NavItems } from "./navigation/NavItems";
 import { AuthButtons } from "./navigation/AuthButtons";
+import { useSession } from "@/hooks/use-session";
 
 export function Navigation() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Session check error:', error);
-          setUser(null);
-          return;
-        }
-        setUser(session?.user ?? null);
-      } catch (error) {
-        console.error('Session check error:', error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
-      
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        if (location.pathname !== '/login') {
-          navigate('/login');
-          toast({
-            title: "Session ended",
-            description: "Please sign in again to continue.",
-          });
-        }
-      } else if (session?.user) {
-        setUser(session.user);
-        if (location.pathname === '/login') {
-          navigate('/dashboard');
-        }
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, location.pathname, toast]);
+  const { user } = useSession();
 
   const handleAddRecipe = () => {
     if (!user) {
