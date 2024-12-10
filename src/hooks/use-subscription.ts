@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 export function useSubscription() {
   const navigate = useNavigate();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
   // Effect to check session and redirect if needed
   useEffect(() => {
@@ -17,6 +18,7 @@ export function useSubscription() {
           navigate("/login");
           return;
         }
+        setSessionToken(session.access_token);
         setIsInitialized(true);
       } catch (error) {
         console.error('Session check error:', error);
@@ -31,6 +33,11 @@ export function useSubscription() {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
         navigate("/login");
+        setSessionToken(null);
+        setIsInitialized(false);
+      } else {
+        setSessionToken(session.access_token);
+        setIsInitialized(true);
       }
     });
 
@@ -40,22 +47,16 @@ export function useSubscription() {
   }, [navigate]);
 
   return useQuery({
-    queryKey: ['subscription'],
+    queryKey: ['subscription', sessionToken],
     queryFn: async () => {
+      if (!sessionToken) {
+        throw new Error('No active session');
+      }
+
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-          console.error('Session error or no session:', sessionError);
-          navigate("/login");
-          return { isSubscribed: false };
-        }
-
-        console.log('Using session for user:', session.user.id);
-
         const { data, error } = await supabase.functions.invoke('check-subscription', {
           headers: {
-            Authorization: `Bearer ${session.access_token}`,
+            Authorization: `Bearer ${sessionToken}`,
           },
         });
 
@@ -74,7 +75,7 @@ export function useSubscription() {
         return { isSubscribed: false };
       }
     },
-    enabled: isInitialized, // Only run the query after session check
-    retry: false, // Don't retry on failure
+    enabled: isInitialized && !!sessionToken,
+    retry: false,
   });
 }
