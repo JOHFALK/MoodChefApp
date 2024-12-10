@@ -1,27 +1,15 @@
 import { useState, useEffect } from "react";
-import { EmotionSelector } from "@/components/EmotionSelector";
-import { IngredientInput } from "@/components/IngredientInput";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, CookingPot, Smile } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { RecipeList } from "@/components/RecipeList";
 import { RecipeSubmissionForm } from "@/components/RecipeSubmissionForm";
-import { Button } from "@/components/ui/button";
-import { Sparkles, Heart, CookingPot, Smile } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { useSubscription } from "@/hooks/use-subscription";
-import { useToast } from "@/components/ui/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import { Hero } from "@/components/home/Hero";
 import { Features } from "@/components/home/Features";
+import { RecipeForm } from "@/components/home/RecipeForm";
 
 const Index = () => {
-  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
-  const [ingredients, setIngredients] = useState<string[]>([]);
-  const [showRecipes, setShowRecipes] = useState(false);
-  const [showSubmissionForm, setShowSubmissionForm] = useState(false);
-  const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-  const { data: subscription } = useSubscription();
-  const { toast } = useToast();
+  const [showSubmissionForm, setShowSubmissionForm] = useState(false);
 
   useEffect(() => {
     // Check current session
@@ -47,7 +35,7 @@ const Index = () => {
       data: { subscription: authSubscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         setUser(null);
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setUser(session?.user ?? null);
@@ -58,50 +46,6 @@ const Index = () => {
       authSubscription.unsubscribe();
     };
   }, []);
-
-  const handleEmotionSelect = (emotion: string) => {
-    if (selectedEmotions.includes(emotion)) {
-      setSelectedEmotions(selectedEmotions.filter((e) => e !== emotion));
-    } else if (selectedEmotions.length < 2) {
-      setSelectedEmotions([...selectedEmotions, emotion]);
-    }
-  };
-
-  const handleSubmitRecipe = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to submit recipes",
-          variant: "destructive",
-        });
-        navigate("/login");
-        return;
-      }
-
-      if (!subscription?.isSubscribed) {
-        toast({
-          title: "Premium feature",
-          description: "Recipe submission is available for premium users only",
-          variant: "destructive",
-        });
-        navigate("/pricing");
-        return;
-      }
-
-      setShowSubmissionForm(true);
-    } catch (error) {
-      console.error('Session check error:', error);
-      toast({
-        title: "Authentication error",
-        description: "Please try signing in again",
-        variant: "destructive",
-      });
-      navigate("/login");
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-radial from-background via-secondary/5 to-background">
@@ -159,57 +103,9 @@ const Index = () => {
                 </motion.p>
               </div>
               
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="glass-card rounded-xl p-8 space-y-8"
-              >
-                <EmotionSelector
-                  selectedEmotions={selectedEmotions}
-                  onEmotionSelect={handleEmotionSelect}
-                />
-                
-                <IngredientInput
-                  ingredients={ingredients}
-                  onIngredientsChange={setIngredients}
-                />
+              <RecipeForm />
 
-                <motion.div 
-                  className="flex justify-center"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-primary to-secondary text-white hover:opacity-90 transition-all duration-300
-                             shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:hover:transform-none
-                             relative overflow-hidden group px-8 py-6 text-lg"
-                    disabled={selectedEmotions.length === 0}
-                    onClick={() => setShowRecipes(true)}
-                  >
-                    <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></span>
-                    <Sparkles className="w-6 h-6 mr-3 animate-pulse" />
-                    Find Your Perfect Recipe
-                  </Button>
-                </motion.div>
-              </motion.div>
-
-              {showRecipes && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-8"
-                >
-                  <RecipeList
-                    selectedEmotions={selectedEmotions}
-                    ingredients={ingredients}
-                  />
-                </motion.div>
-              )}
-
-              <Features onSubmitRecipe={handleSubmitRecipe} />
+              <Features onSubmitRecipe={() => setShowSubmissionForm(true)} />
             </motion.div>
           )}
         </AnimatePresence>
