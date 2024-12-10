@@ -12,17 +12,14 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 
 interface Achievement {
+  id: string;
+  user_id: string;
   achievement_type: string;
   achievement_data: {
     count?: number;
     date: string;
   };
   created_at: string;
-}
-
-interface Profile {
-  badges: string[];
-  mood_points: number;
 }
 
 const container = {
@@ -56,7 +53,7 @@ export function GamificationDisplay() {
         .single();
 
       if (error) throw error;
-      return data as Profile;
+      return data;
     },
   });
 
@@ -73,7 +70,15 @@ export function GamificationDisplay() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Achievement[];
+      
+      // Transform the data to match Achievement type
+      return (data as any[]).map(achievement => ({
+        ...achievement,
+        achievement_data: {
+          count: achievement.achievement_data?.count,
+          date: achievement.achievement_data?.date || achievement.created_at
+        }
+      })) as Achievement[];
     },
   });
 
@@ -174,7 +179,7 @@ export function GamificationDisplay() {
                         <p className="text-sm text-muted-foreground">
                           {achievement.achievement_data.count
                             ? `Completed ${achievement.achievement_data.count} items`
-                            : new Date(achievement.created_at).toLocaleDateString()}
+                            : new Date(achievement.achievement_data.date).toLocaleDateString()}
                         </p>
                       </div>
                     </motion.div>

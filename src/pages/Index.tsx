@@ -27,7 +27,7 @@ export default function Index() {
 
   return (
     <main>
-      <Hero />
+      <Hero onSubmitRecipe={handleSubmitRecipe} />
       <Features onSubmitRecipe={handleSubmitRecipe} />
       <GamificationDisplay />
     </main>
