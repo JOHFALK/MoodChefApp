@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RecipeCard } from "./RecipeCard";
 import { MindfulPrompt } from "./MindfulPrompt";
 import { useQuery } from "@tanstack/react-query";
@@ -37,13 +37,13 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
         setDebugInfo(prev => `${prev}\nApplying emotion filter: ${selectedEmotions.join(', ')}`);
-        query = query.overlaps('emotions', selectedEmotions);
+        query = query.contains('emotions', selectedEmotions);
       }
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
         setDebugInfo(prev => `${prev}\nApplying ingredient filter: ${ingredients.join(', ')}`);
-        query = query.overlaps('ingredients', ingredients);
+        query = query.contains('ingredients', ingredients);
       }
 
       const { data, error } = await query;
