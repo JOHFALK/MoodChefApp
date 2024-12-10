@@ -65,7 +65,29 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
 
   return (
     <motion.div layout>
-      <Card className="hover:shadow-lg transition-shadow duration-300">
+      <Card className={cn(
+        "hover:shadow-lg transition-shadow duration-300",
+        category.is_premium && "relative"
+      )}>
+        {category.is_premium && (
+          <div className="absolute inset-0 backdrop-blur-[2px] bg-background/50 z-10 flex items-center justify-center">
+            <div className="text-center p-4">
+              <Crown className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+              <h3 className="text-lg font-semibold mb-1">Premium Category</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Upgrade to access premium content
+              </p>
+              <Button 
+                size="sm" 
+                onClick={() => navigate("/pricing")}
+                className="bg-gradient-to-r from-yellow-500 to-yellow-600"
+              >
+                Upgrade Now
+              </Button>
+            </div>
+          </div>
+        )}
+        
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="flex items-center space-x-2">
             {getCategoryIcon()}

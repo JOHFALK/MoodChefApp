@@ -44,17 +44,13 @@ export function Forums() {
     },
   });
 
-  const handleNewTopic = (categoryId: string, isPremium: boolean) => {
-    if (isPremium) {
-      toast({
-        title: "Premium Feature",
-        description: "This category is for premium members only. Upgrade to access exclusive content!",
-        variant: "destructive",
-      });
-      navigate("/pricing");
-      return;
-    }
-    navigate(`/community/new-topic/${categoryId}`);
+  const handleNewTopic = () => {
+    toast({
+      title: "Premium Feature",
+      description: "Creating topics is a premium feature. Upgrade to start discussions!",
+      variant: "destructive",
+    });
+    navigate("/pricing");
   };
 
   const filteredCategories = categories?.filter(category => {
