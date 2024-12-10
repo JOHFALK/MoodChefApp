@@ -9,10 +9,20 @@ export const emotionMappingRules = {
 
   'Angry': (recipe) => ({
     match: recipe.tags?.some((tag) =>
-      ['spicy', 'hot', 'fiery', 'intense', 'bold', 'chili', 'pepper'].includes(tag.name)) ||
+      ['spicy', 'hot', 'fiery', 'intense', 'bold', 'chili', 'pepper', 'buffalo', 'jalapeno', 'sriracha', 'wasabi', 'curry', 'cajun'].includes(tag.name.toLowerCase())) ||
       recipe.description?.toLowerCase().includes('spicy') ||
-      recipe.name?.toLowerCase().includes('hot'),
-    score: calculateMatchScore(recipe, ['spicy', 'hot', 'fiery', 'intense', 'bold', 'chili', 'pepper'])
+      recipe.description?.toLowerCase().includes('hot sauce') ||
+      recipe.name?.toLowerCase().includes('spicy') ||
+      recipe.name?.toLowerCase().includes('hot') ||
+      recipe.sections?.some(section => 
+        section.components?.some(component => 
+          component.raw_text?.toLowerCase().includes('chili') ||
+          component.raw_text?.toLowerCase().includes('jalapeno') ||
+          component.raw_text?.toLowerCase().includes('sriracha') ||
+          component.raw_text?.toLowerCase().includes('hot sauce')
+        )
+      ),
+    score: calculateMatchScore(recipe, ['spicy', 'hot', 'fiery', 'intense', 'bold', 'chili', 'pepper', 'buffalo', 'jalapeno', 'sriracha', 'wasabi', 'curry', 'cajun'])
   }),
 
   'Sad': (recipe) => ({
