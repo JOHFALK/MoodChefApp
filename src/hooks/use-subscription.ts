@@ -1,7 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function useSubscription() {
+  const navigate = useNavigate();
+
+  // Effect to check session and redirect if needed
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('No active session, redirecting to login');
+        navigate("/login");
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
   return useQuery({
     queryKey: ['subscription'],
     queryFn: async () => {
@@ -10,17 +26,18 @@ export function useSubscription() {
         
         if (sessionError) {
           console.error('Session error:', sessionError);
+          navigate("/login");
           return { isSubscribed: false };
         }
 
         if (!session) {
           console.log('No active session found');
+          navigate("/login");
           return { isSubscribed: false };
         }
 
         console.log('Using session for user:', session.user.id);
 
-        // Make sure we're passing the access token in the Authorization header
         const { data, error } = await supabase.functions.invoke('check-subscription', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
@@ -29,8 +46,9 @@ export function useSubscription() {
 
         if (error) {
           console.error('Failed to check subscription:', error);
-          // If authentication failed, return false instead of throwing
-          if (error.message.includes('authenticate') || error.status === 401) {
+          if (error.message.includes('authenticate') || error.status === 401 || error.status === 403) {
+            // Session might be invalid, redirect to login
+            navigate("/login");
             return { isSubscribed: false };
           }
           throw error;
