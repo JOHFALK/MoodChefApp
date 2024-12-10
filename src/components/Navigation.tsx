@@ -43,13 +43,15 @@ export function Navigation() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || !session) {
         setUser(null);
-        navigate('/login');
-        toast({
-          title: "Signed out successfully",
-          description: "You have been logged out of your account.",
-        });
+        if (location.pathname !== '/login') {
+          navigate('/login');
+          toast({
+            title: "Session ended",
+            description: "Please sign in again to continue.",
+          });
+        }
       } else if (session?.user) {
         setUser(session.user);
       }
@@ -75,12 +77,25 @@ export function Navigation() {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // First set user to null to prevent any authenticated requests
+      setUser(null);
       
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+        toast({
+          title: "Error signing out",
+          description: "An error occurred while signing out.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Only navigate and show success toast if sign out was successful
       navigate("/login");
       toast({
         title: "Signed out successfully",
+        description: "You have been logged out of your account.",
       });
     } catch (error) {
       console.error('Sign out error:', error);
