@@ -1,6 +1,6 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from 'https://esm.sh/stripe@14.21.0';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import Stripe from 'https://esm.sh/stripe@13.3.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,7 +17,7 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', // Use service role key for admin access
     );
 
     // Get the authorization header
@@ -29,17 +29,17 @@ serve(async (req) => {
     // Get the JWT token
     const token = authHeader.replace('Bearer ', '');
     
-    // Get the user from the token
+    // Get the user from the token using the service role client
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     
-    if (userError || !user) {
+    if (userError) {
       console.error('User error:', userError);
-      throw new Error('User not authenticated');
+      throw new Error('Failed to authenticate user');
     }
 
-    if (!user.email) {
-      console.error('No user email found');
-      throw new Error('User email not found');
+    if (!user || !user.email) {
+      console.error('No user or email found');
+      throw new Error('User not found');
     }
 
     // Initialize Stripe
@@ -53,7 +53,7 @@ serve(async (req) => {
       limit: 1,
     });
 
-    if (customers.data.length === 0) {
+    if (!customers.data.length) {
       return new Response(
         JSON.stringify({ isSubscribed: false }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -64,6 +64,7 @@ serve(async (req) => {
     const subscriptions = await stripe.subscriptions.list({
       customer: customers.data[0].id,
       status: 'active',
+      limit: 1,
     });
 
     return new Response(
