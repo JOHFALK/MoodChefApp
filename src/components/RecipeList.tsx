@@ -31,16 +31,14 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
 
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
-        // Use contains for array overlap - matches if any emotion matches
-        query = query.contains('emotions', selectedEmotions);
+        // Use overlaps for array comparison - matches if any emotion matches
+        query = query.overlaps('emotions', selectedEmotions);
       }
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
-        // Use contains for array overlap - matches if any ingredient matches
-        ingredients.forEach(ingredient => {
-          query = query.contains('ingredients', [ingredient]);
-        });
+        // Use overlaps for array comparison - matches if any ingredient matches
+        query = query.overlaps('ingredients', ingredients);
       }
 
       const { data, error } = await query;
