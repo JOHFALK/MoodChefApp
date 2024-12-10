@@ -19,30 +19,53 @@ export function Navigation() {
   const location = useLocation();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session check error:', error);
+          setUser(null);
+          if (location.pathname !== '/login') {
+            navigate('/login');
+          }
+          return;
+        }
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('Session check error:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    // Listen for auth changes
+    checkSession();
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       
-      // If session is lost and user was on a protected route, redirect to login
-      if (!session && location.pathname !== '/login') {
-        navigate('/login');
-        toast({
-          title: "Session expired",
-          description: "Please sign in again to continue.",
-        });
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        setUser(null);
+        if (location.pathname !== '/login') {
+          navigate('/login');
+          toast({
+            title: "Session ended",
+            description: "Please sign in again to continue.",
+          });
+        }
+      } else if (session?.user) {
+        setUser(session.user);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate, location.pathname]);
 
   const handleAddRecipe = () => {
@@ -56,6 +79,37 @@ export function Navigation() {
       return;
     }
     navigate("/submit");
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+        // Even if sign out fails, clear local state
+        setUser(null);
+        navigate("/login");
+        toast({
+          title: "Signed out",
+          description: "You have been signed out of your account.",
+        });
+        return;
+      }
+      
+      navigate("/login");
+      toast({
+        title: "Signed out successfully",
+      });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Even if sign out fails, clear local state and redirect
+      setUser(null);
+      navigate("/login");
+      toast({
+        title: "Signed out",
+        description: "You have been signed out of your account.",
+      });
+    }
   };
 
   const navItems = [
@@ -74,29 +128,6 @@ export function Navigation() {
     },
     { label: "Pricing", path: "/pricing" },
   ];
-
-  const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-        throw error;
-      }
-      navigate("/login");
-      toast({
-        title: "Signed out successfully",
-      });
-    } catch (error) {
-      console.error('Sign out error:', error);
-      // Even if sign out fails, clear local state and redirect
-      setUser(null);
-      navigate("/login");
-      toast({
-        title: "Signed out",
-        description: "You have been signed out of your account.",
-      });
-    }
-  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">

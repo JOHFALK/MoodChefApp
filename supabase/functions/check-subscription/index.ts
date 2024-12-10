@@ -24,7 +24,13 @@ serve(async (req) => {
     console.log('Auth header present:', !!authHeader);
 
     if (!authHeader) {
-      throw new Error('No authorization header');
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { 
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     // Get user from the JWT token

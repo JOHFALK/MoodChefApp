@@ -6,6 +6,7 @@ import { RecipeList } from "@/components/RecipeList";
 import { RecipeSubmissionForm } from "@/components/RecipeSubmissionForm";
 import { Features } from "@/components/home/Features";
 import { RecipeForm } from "@/components/home/RecipeForm";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
