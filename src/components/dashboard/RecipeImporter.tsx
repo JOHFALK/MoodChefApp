@@ -22,7 +22,7 @@ export function RecipeImporter() {
         .from('recipes')
         .select('emotions');
 
-      const emotionCounts = {};
+      const emotionCounts: Record<string, number> = {};
       recipes?.forEach(recipe => {
         recipe.emotions.forEach(emotion => {
           emotionCounts[emotion] = (emotionCounts[emotion] || 0) + 1;
@@ -86,7 +86,7 @@ export function RecipeImporter() {
           <p>Total Recipes: {recipeStats?.total || 0}</p>
           <div className="space-y-1">
             <p className="font-medium">Recipes per emotion:</p>
-            {recipeStats?.perEmotion && Object.entries(recipeStats.perEmotion).map(([emotion, count]) => (
+            {recipeStats?.perEmotion && Object.entries(recipeStats.perEmotion).map(([emotion, count]: [string, number]) => (
               <p key={emotion} className="pl-4">
                 {emotion}: {count}
               </p>
