@@ -42,7 +42,7 @@ export function RecipeGrid() {
           )
         `)
         .eq('status', 'approved')
-        .neq('user_id', null) // Only show user-generated recipes
+        .not('user_id', 'is', null) // Changed this line to use proper null check syntax
         .order('votes', { ascending: false });
       
       if (error) throw error;
