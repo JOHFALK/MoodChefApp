@@ -3,7 +3,6 @@ import { RecipeCard } from "./RecipeCard";
 import { MindfulPrompt } from "./MindfulPrompt";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Recipe {
   id: string;
@@ -22,8 +21,6 @@ interface RecipeListProps {
 }
 
 export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
-  const [debugInfo, setDebugInfo] = useState<string>('');
-
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ['recipes', selectedEmotions, ingredients],
     queryFn: async () => {
@@ -32,21 +29,13 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         ingredients
       });
 
-      setDebugInfo(`Starting search with emotions: ${selectedEmotions.join(', ')} and ingredients: ${ingredients.join(', ')}`);
-
       let query = supabase
         .from('recipes')
         .select('*')
         .eq('status', 'approved');
 
-      console.log('Base query created');
-
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
-        console.log('Applying emotion filter:', selectedEmotions);
-        setDebugInfo(prev => `${prev}\nApplying emotion filter: ${selectedEmotions.join(', ')}`);
-        
-        // Apply filters for each emotion individually
         selectedEmotions.forEach(emotion => {
           query = query.contains('emotions', [emotion]);
         });
@@ -54,26 +43,16 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
-        console.log('Applying ingredient filter:', ingredients);
-        setDebugInfo(prev => `${prev}\nApplying ingredient filter: ${ingredients.join(', ')}`);
-        
-        // Apply filters for each ingredient individually
         ingredients.forEach(ingredient => {
           query = query.contains('ingredients', [ingredient]);
         });
       }
 
-      console.log('Executing query...');
       const { data, error } = await query;
       
       if (error) {
-        console.error('Query error:', error);
-        setDebugInfo(prev => `${prev}\nError: ${error.message}`);
         throw error;
       }
-
-      console.log('Query results:', data);
-      setDebugInfo(prev => `${prev}\nFound ${data?.length || 0} recipes`);
 
       return (data || []).map(recipe => ({
         id: recipe.id,
@@ -110,13 +89,6 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
   return (
     <div className="space-y-8">
       <MindfulPrompt emotions={selectedEmotions} />
-      
-      {/* Debug information */}
-      <Alert>
-        <AlertDescription className="font-mono text-sm whitespace-pre-wrap">
-          {debugInfo}
-        </AlertDescription>
-      </Alert>
       
       {error ? (
         <div className="text-center py-8">
