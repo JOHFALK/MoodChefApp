@@ -1,28 +1,19 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { DashboardContent } from "@/components/dashboard/DashboardContent";
+import { RecipeImporter } from "@/components/dashboard/RecipeImporter";
+import { useSubscription } from "@/hooks/use-subscription";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const { data: subscription } = useSubscription();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/login");
-      }
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/login");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  return <DashboardLayout />;
+  return (
+    <DashboardLayout>
+      <DashboardContent />
+      {subscription?.isSubscribed && (
+        <div className="mt-8">
+          <RecipeImporter />
+        </div>
+      )}
+    </DashboardLayout>
+  );
 }
