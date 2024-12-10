@@ -85,30 +85,33 @@ const App = () => {
           <Navigation />
           <div className="pt-16">
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/community/topic/:topicId" element={<Topic />} />
+              <Route path="/battles" element={<Battles />} />
+              <Route path="/recipe/:recipeId" element={<Recipe />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/legal" element={<Legal />} />
+
+              {/* Protected routes */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
               } />
-              <Route path="/pricing" element={<Pricing />} />
               <Route path="/submit" element={
                 <ProtectedRoute>
                   <Submit />
                 </ProtectedRoute>
               } />
-              <Route path="/community" element={<Community />} />
-              <Route path="/community/topic/:topicId" element={<Topic />} />
               <Route path="/community/new-topic/:categoryId" element={
                 <ProtectedRoute>
                   <NewTopic />
                 </ProtectedRoute>
               } />
-              <Route path="/battles" element={<Battles />} />
-              <Route path="/recipe/:recipeId" element={<Recipe />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/legal" element={<Legal />} />
             </Routes>
           </div>
         </BrowserRouter>
