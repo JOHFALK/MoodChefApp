@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface CategoryCardProps {
   category: {
@@ -181,3 +182,4 @@ export function CategoryCard({ category, onNewTopic }: CategoryCardProps) {
     </motion.div>
   );
 }
+
