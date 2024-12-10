@@ -19,9 +19,7 @@ export function useSession() {
           console.error('Session check error:', error);
           setUser(null);
           setSessionToken(null);
-          if (location.pathname !== '/login') {
-            navigate('/login');
-          }
+          setIsLoading(false);
           return;
         }
         
@@ -31,16 +29,11 @@ export function useSession() {
           if (location.pathname === '/login') {
             navigate('/dashboard');
           }
-        } else if (location.pathname !== '/login' && location.pathname !== '/') {
-          navigate('/login');
         }
       } catch (error) {
         console.error('Session check error:', error);
         setUser(null);
         setSessionToken(null);
-        if (location.pathname !== '/login') {
-          navigate('/login');
-        }
       } finally {
         setIsLoading(false);
       }
@@ -56,14 +49,6 @@ export function useSession() {
       if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
         setUser(session?.user || null);
         setSessionToken(session?.access_token || null);
-        
-        if (!session?.user && location.pathname !== '/login' && location.pathname !== '/') {
-          navigate('/login');
-          toast({
-            title: "Session ended",
-            description: "Please sign in again to continue.",
-          });
-        }
       } else if (session?.user) {
         setUser(session.user);
         setSessionToken(session.access_token);
