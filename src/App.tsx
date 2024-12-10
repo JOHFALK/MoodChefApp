@@ -13,6 +13,8 @@ import Community from "./pages/Community";
 import Battles from "./pages/Battles";
 import Recipe from "./pages/Recipe";
 import NewTopic from "./pages/NewTopic";
+import Contact from "./pages/Contact";
+import Legal from "./pages/Legal";
 import { Topic } from "@/components/community/forum/Topic";
 import { useSession } from "@/hooks/use-session";
 import { useEffect } from "react";
@@ -105,6 +107,8 @@ const App = () => {
               } />
               <Route path="/battles" element={<Battles />} />
               <Route path="/recipe/:recipeId" element={<Recipe />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/legal" element={<Legal />} />
             </Routes>
           </div>
         </BrowserRouter>

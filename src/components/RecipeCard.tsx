@@ -163,7 +163,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                 className="w-full mt-4"
                 onClick={(e) => {
                   e.preventDefault();
-                  setShowInteractionForm(true);
+                  if (!recipe.is_premium || isPremium) {
+                    setShowInteractionForm(true);
+                  } else {
+                    setShowPremiumDialog(true);
+                  }
                 }}
               >
                 I Cooked This!
