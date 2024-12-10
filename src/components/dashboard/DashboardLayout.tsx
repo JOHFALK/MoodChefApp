@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { supabase } from "@/integrations/supabase/client";
 
-export function DashboardLayout() {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userEmail, setUserEmail] = useState<string>();
@@ -39,7 +42,7 @@ export function DashboardLayout() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
       <DashboardHeader userEmail={userEmail} onSignOut={handleSignOut} />
-      <DashboardContent />
+      {children}
     </div>
   );
 }

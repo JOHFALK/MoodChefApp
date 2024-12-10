@@ -27,13 +27,15 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
-      <DashboardContent />
-      {isAdmin && subscription?.isSubscribed && (
-        <div className="container py-8">
-          <RecipeImporter />
-        </div>
-      )}
-    </div>
+    <DashboardLayout>
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
+        <DashboardContent />
+        {isAdmin && subscription?.isSubscribed && (
+          <div className="container py-8">
+            <RecipeImporter />
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
   );
 }
