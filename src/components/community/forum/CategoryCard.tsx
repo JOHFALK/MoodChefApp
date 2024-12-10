@@ -65,6 +65,14 @@ export function CategoryCard({ category, onNewTopic, isPremium }: CategoryCardPr
     }
   };
 
+  const handleNewTopic = () => {
+    if (!isPremium && category.is_premium) {
+      navigate("/pricing");
+      return;
+    }
+    navigate(`/community/new-topic/${category.id}`);
+  };
+
   return (
     <motion.div layout>
       <Card className={cn(
@@ -112,14 +120,14 @@ export function CategoryCard({ category, onNewTopic, isPremium }: CategoryCardPr
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  onClick={() => onNewTopic(category.id, category.is_premium)}
+                  onClick={handleNewTopic}
                 >
                   <PlusCircle className="h-4 w-4" />
                   New Topic
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{!isPremium ? "Premium members only" : "Start a new discussion"}</p>
+                <p>{!isPremium && category.is_premium ? "Premium members only" : "Start a new discussion"}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
