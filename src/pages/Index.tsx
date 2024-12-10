@@ -2,6 +2,7 @@ import { Hero } from "@/components/home/Hero";
 import { Features } from "@/components/home/Features";
 import { GamificationDisplay } from "@/components/home/GamificationDisplay";
 import { EmotionSelector } from "@/components/EmotionSelector";
+import { RecipeList } from "@/components/RecipeList";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,8 @@ export default function Index() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
+  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [showResults, setShowResults] = useState(false);
 
   const handleSubmitRecipe = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -38,6 +41,13 @@ export default function Index() {
       }
       return prev;
     });
+    setShowResults(true);
+  };
+
+  const handleSearch = (emotions: string[], searchIngredients: string[]) => {
+    setSelectedEmotions(emotions);
+    setIngredients(searchIngredients);
+    setShowResults(true);
   };
 
   return (
@@ -47,6 +57,12 @@ export default function Index() {
         selectedEmotions={selectedEmotions}
         onEmotionSelect={handleEmotionSelect}
       />
+      {showResults && (
+        <RecipeList 
+          selectedEmotions={selectedEmotions}
+          ingredients={ingredients}
+        />
+      )}
       <Features onSubmitRecipe={handleSubmitRecipe} />
       <GamificationDisplay />
     </main>
