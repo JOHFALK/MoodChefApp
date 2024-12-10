@@ -695,6 +695,7 @@ export type Database = {
           image_url: string | null
           ingredients: string[]
           instructions: string[]
+          is_premium: boolean | null
           status: string | null
           title: string
           user_id: string | null
@@ -709,6 +710,7 @@ export type Database = {
           image_url?: string | null
           ingredients: string[]
           instructions: string[]
+          is_premium?: boolean | null
           status?: string | null
           title: string
           user_id?: string | null
@@ -723,6 +725,7 @@ export type Database = {
           image_url?: string | null
           ingredients?: string[]
           instructions?: string[]
+          is_premium?: boolean | null
           status?: string | null
           title?: string
           user_id?: string | null

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, ThumbsUp } from "lucide-react";
+import { Clock, Users, ThumbsUp, Lock } from "lucide-react";
 import { RecipeInteractionForm } from "./RecipeInteractionForm";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,7 @@ interface Recipe {
   emotions: string[];
   ingredients: string[];
   votes?: number;
+  is_premium?: boolean;
 }
 
 interface RecipeCardProps {
@@ -127,7 +128,15 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     <Card className="w-full transition-all hover:shadow-lg">
       <Link to={`/recipe/${recipe.id}`}>
         <CardHeader>
-          <CardTitle className="text-xl">{recipe.title}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl">{recipe.title}</CardTitle>
+            {recipe.is_premium && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                Premium
+              </Badge>
+            )}
+          </div>
           <CardDescription className="flex flex-wrap gap-2">
             {recipe.emotions.map((emotion) => (
               <Badge key={emotion} variant="secondary">

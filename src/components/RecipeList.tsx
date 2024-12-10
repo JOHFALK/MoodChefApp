@@ -3,6 +3,11 @@ import { RecipeCard } from "./RecipeCard";
 import { MindfulPrompt } from "./MindfulPrompt";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubscription } from "@/hooks/use-subscription";
+import { Lock } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface Recipe {
   id: string;
@@ -13,6 +18,7 @@ interface Recipe {
   emotions: string[];
   ingredients: string[];
   votes: number;
+  is_premium: boolean;
 }
 
 interface RecipeListProps {
@@ -21,14 +27,12 @@ interface RecipeListProps {
 }
 
 export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
+  const { data: subscription } = useSubscription();
+  const isPremium = subscription?.isSubscribed ?? false;
+
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ['recipes', selectedEmotions, ingredients],
     queryFn: async () => {
-      console.log('Starting recipe search with:', {
-        selectedEmotions,
-        ingredients
-      });
-
       let query = supabase
         .from('recipes')
         .select('*')
@@ -62,7 +66,8 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         servings: 2,
         emotions: recipe.emotions || [],
         ingredients: recipe.ingredients || [],
-        votes: recipe.votes || 0
+        votes: recipe.votes || 0,
+        is_premium: recipe.is_premium || false
       }));
     },
     staleTime: 1000 * 60, // Cache for 1 minute
@@ -86,6 +91,10 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
     );
   }
 
+  const filteredRecipes = recipes?.filter(recipe => 
+    !recipe.is_premium || (recipe.is_premium && isPremium)
+  );
+
   return (
     <div className="space-y-8">
       <MindfulPrompt emotions={selectedEmotions} />
@@ -96,18 +105,33 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
             Error loading recipes: {error.message}
           </p>
         </div>
-      ) : !recipes?.length ? (
+      ) : !filteredRecipes?.length ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">
             No recipes found matching your mood and ingredients. Try adjusting your selections!
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
-          ))}
-        </div>
+        <>
+          {!isPremium && recipes?.some(r => r.is_premium) && (
+            <Alert>
+              <AlertDescription className="flex items-center justify-between">
+                <span>Some recipes are only available to premium users.</span>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/pricing" className="flex items-center gap-2">
+                    <Lock className="w-4 h-4" />
+                    Upgrade to Premium
+                  </Link>
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
