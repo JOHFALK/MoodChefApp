@@ -27,60 +27,86 @@ function generateDescription(recipe: any): string {
 export async function processRecipes(recipes: any[], neededRecipes: Map<string, number>) {
   console.log('Processing recipes:', recipes.length);
   const processedRecipes = [];
+  const emotionCounts = new Map();
+
+  // Initialize emotion counts
+  Object.keys(emotionMappingRules).forEach(emotion => {
+    emotionCounts.set(emotion, 0);
+  });
 
   // First pass: Calculate emotion matches for all recipes
-  for (const recipe of recipes) {
-    if (!recipe.name || !recipe.sections || !recipe.instructions) {
-      console.log('Skipping invalid recipe:', recipe.name);
-      continue;
+  const recipesWithScores = recipes
+    .filter(recipe => recipe.name && recipe.sections && recipe.instructions)
+    .map(recipe => {
+      const emotionScores = Object.entries(emotionMappingRules)
+        .map(([emotion, rule]) => {
+          const { match, score } = rule(recipe);
+          return { emotion, match, score };
+        })
+        .filter(result => result.match)
+        .sort((a, b) => b.score - a.score);
+
+      return {
+        recipe,
+        scores: emotionScores
+      };
+    })
+    .filter(item => item.scores.length > 0);
+
+  console.log('Valid recipes with emotion matches:', recipesWithScores.length);
+
+  // Calculate target count per emotion
+  const targetPerEmotion = Math.ceil(recipes.length / Object.keys(emotionMappingRules).length);
+  console.log('Target recipes per emotion:', targetPerEmotion);
+
+  // Second pass: Distribute recipes evenly across emotions
+  for (const { recipe, scores } of recipesWithScores) {
+    // Try each matching emotion in order of score
+    let assigned = false;
+    for (const { emotion, score } of scores) {
+      const currentCount = emotionCounts.get(emotion);
+      
+      // If this emotion needs more recipes
+      if (currentCount < targetPerEmotion) {
+        processedRecipes.push({
+          title: recipe.name,
+          description: generateDescription(recipe),
+          ingredients: cleanIngredients(recipe.sections),
+          instructions: cleanInstructions(recipe.instructions),
+          cooking_time: recipe.total_time_minutes || recipe.prep_time_minutes || 30,
+          emotions: [emotion],
+          image_url: recipe.thumbnail_url,
+          status: 'approved',
+          is_premium: Math.random() < 0.3 // 30% chance of being premium
+        });
+
+        emotionCounts.set(emotion, currentCount + 1);
+        assigned = true;
+        break;
+      }
     }
 
-    // Log recipe details for debugging
-    console.log('Processing recipe:', {
-      name: recipe.name,
-      tags: recipe.tags?.map(t => t.name),
-      hasInstructions: Boolean(recipe.instructions),
-      hasSections: Boolean(recipe.sections)
-    });
-
-    // Calculate matching emotions
-    const emotionScores = Object.entries(emotionMappingRules)
-      .map(([emotion, rule]) => {
-        const { match, score } = rule(recipe);
-        return { emotion, match, score };
-      })
-      .filter(result => result.match)
-      .sort((a, b) => b.score - a.score);
-
-    if (emotionScores.length > 0) {
-      const selectedEmotion = emotionScores[0].emotion;
-      console.log('Recipe matched emotion:', selectedEmotion, 'for recipe:', recipe.name);
-
+    // If we couldn't assign to preferred emotions, find the emotion with lowest count
+    if (!assigned) {
+      const [lowestEmotion] = [...emotionCounts.entries()].sort(([,a], [,b]) => a - b)[0];
       processedRecipes.push({
         title: recipe.name,
         description: generateDescription(recipe),
         ingredients: cleanIngredients(recipe.sections),
         instructions: cleanInstructions(recipe.instructions),
         cooking_time: recipe.total_time_minutes || recipe.prep_time_minutes || 30,
-        emotions: [selectedEmotion],
+        emotions: [lowestEmotion],
         image_url: recipe.thumbnail_url,
         status: 'approved',
-        is_premium: Math.random() < 0.3 // 30% chance of being premium
+        is_premium: Math.random() < 0.3
       });
-    } else {
-      console.log('No emotion matches found for recipe:', recipe.name);
+      emotionCounts.set(lowestEmotion, emotionCounts.get(lowestEmotion) + 1);
     }
   }
 
-  // Log distribution statistics
-  const emotionCounts = processedRecipes.reduce((acc, recipe) => {
-    recipe.emotions.forEach(emotion => {
-      acc[emotion] = (acc[emotion] || 0) + 1;
-    });
-    return acc;
-  }, {});
-
-  console.log('Final emotion distribution:', emotionCounts);
+  // Log final distribution
+  console.log('Final emotion distribution:', Object.fromEntries(emotionCounts));
+  console.log('Total processed recipes:', processedRecipes.length);
 
   return processedRecipes;
 }
