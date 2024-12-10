@@ -67,6 +67,7 @@ serve(async (req) => {
     )
 
     // Fetch recipes from Tasty API
+    console.log('Fetching recipes from Tasty API...')
     const response = await fetch(
       'https://tasty.p.rapidapi.com/recipes/list?from=0&size=100&tags=under_30_minutes',
       {
@@ -78,6 +79,7 @@ serve(async (req) => {
     )
 
     if (!response.ok) {
+      console.error('Tasty API error:', response.statusText)
       throw new Error(`Tasty API error: ${response.statusText}`)
     }
 
@@ -85,6 +87,7 @@ serve(async (req) => {
     const recipes = data.results
 
     // Process and tag recipes with emotions
+    console.log('Processing recipes...')
     const processedRecipes = recipes.map((recipe: any) => {
       const emotions = Object.entries(emotionMappingRules)
         .filter(([_, rule]) => rule(recipe))
@@ -107,23 +110,42 @@ serve(async (req) => {
       }
     })
 
-    // Insert recipes into Supabase
-    const { data: insertedData, error } = await supabaseClient
-      .from('recipes')
-      .upsert(
-        processedRecipes,
-        { 
-          onConflict: 'title',
-          ignoreDuplicates: false,
-        }
-      )
+    console.log(`Inserting ${processedRecipes.length} recipes...`)
+    
+    // Insert recipes one by one to handle conflicts better
+    let successCount = 0
+    const errors = []
 
-    if (error) throw error
+    for (const recipe of processedRecipes) {
+      try {
+        const { error } = await supabaseClient
+          .from('recipes')
+          .upsert(recipe, {
+            onConflict: 'title',
+          })
+
+        if (error) {
+          console.error('Error inserting recipe:', recipe.title, error)
+          errors.push({ title: recipe.title, error: error.message })
+        } else {
+          successCount++
+        }
+      } catch (error) {
+        console.error('Error processing recipe:', recipe.title, error)
+        errors.push({ title: recipe.title, error: error.message })
+      }
+    }
+
+    console.log(`Successfully imported ${successCount} recipes`)
+    if (errors.length > 0) {
+      console.log('Errors:', errors)
+    }
 
     return new Response(
       JSON.stringify({ 
         message: 'Recipes fetched and processed successfully',
-        count: processedRecipes.length
+        count: successCount,
+        errors: errors.length > 0 ? errors : undefined
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -131,6 +153,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Error in fetch-tasty-recipes:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
