@@ -42,7 +42,6 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
 
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
-        // Keep original case for emotion matching
         const emotion = selectedEmotions[0];
         console.log('Filtering by emotion:', emotion);
         query = query.contains('emotions', [emotion]);
@@ -98,9 +97,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
     );
   }
 
-  const filteredRecipes = recipes?.filter(recipe => 
-    !recipe.is_premium || (recipe.is_premium && isPremium)
-  );
+  const hasPremiumRecipes = recipes?.some(recipe => recipe.is_premium);
 
   return (
     <div className="space-y-8">
@@ -112,7 +109,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
             Error loading recipes: {error.message}
           </p>
         </div>
-      ) : !filteredRecipes?.length ? (
+      ) : !recipes?.length ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">
             No recipes found matching your mood and ingredients. Try adjusting your selections!
@@ -120,7 +117,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         </div>
       ) : (
         <>
-          {!isPremium && recipes?.some(r => r.is_premium) && (
+          {!isPremium && hasPremiumRecipes && (
             <Alert>
               <AlertDescription className="flex items-center justify-between">
                 <span>Some recipes are only available to premium users.</span>
@@ -134,7 +131,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
             </Alert>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recipes?.map((recipe) => (
+            {recipes.map((recipe) => (
               <RecipeCard 
                 key={recipe.id} 
                 recipe={recipe}
