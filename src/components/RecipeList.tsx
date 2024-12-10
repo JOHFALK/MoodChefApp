@@ -24,6 +24,8 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
   const { data: recipes, isLoading } = useQuery({
     queryKey: ['recipes', selectedEmotions, ingredients],
     queryFn: async () => {
+      console.log('Search params:', { selectedEmotions, ingredients });
+
       let query = supabase
         .from('recipes')
         .select('*')
@@ -31,18 +33,24 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
 
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
-        // Use overlaps for array comparison - matches if any emotion matches
+        console.log('Applying emotion filter:', selectedEmotions);
         query = query.overlaps('emotions', selectedEmotions);
       }
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
-        // Use overlaps for array comparison - matches if any ingredient matches
+        console.log('Applying ingredient filter:', ingredients);
         query = query.overlaps('ingredients', ingredients);
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      
+      if (error) {
+        console.error('Query error:', error);
+        throw error;
+      }
+
+      console.log('Query results:', data);
 
       return (data || []).map(recipe => ({
         id: recipe.id,
