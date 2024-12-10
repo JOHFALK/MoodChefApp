@@ -19,22 +19,28 @@ export default function Contact() {
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
+    const inquiryType = formData.get('type') as string;
+    const messageContent = formData.get('message') as string;
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+
     const messageData = {
-      title: `${formData.get('type')} Inquiry`,
-      message: formData.get('message') as string,
+      title: `${inquiryType} Inquiry`,
+      message: messageContent,
       user_id: user?.id || null,
       type: 'contact',
       data: {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        inquiry_type: formData.get('type')
-      }
+        name,
+        email,
+        inquiry_type: inquiryType
+      } as unknown as Json,
+      read: false
     };
 
     try {
       const { error } = await supabase
         .from('notifications')
-        .insert([messageData]);
+        .insert(messageData);
 
       if (error) throw error;
 
