@@ -7,6 +7,14 @@ export const emotionMappingRules = {
     score: calculateMatchScore(recipe, ['dessert', 'sweet', 'celebration', 'cake', 'fruit', 'vibrant', 'chocolate', 'colorful'])
   }),
 
+  'Angry': (recipe) => ({
+    match: recipe.tags?.some((tag) =>
+      ['spicy', 'hot', 'fiery', 'intense', 'bold', 'chili', 'pepper'].includes(tag.name)) ||
+      recipe.description?.toLowerCase().includes('spicy') ||
+      recipe.name?.toLowerCase().includes('hot'),
+    score: calculateMatchScore(recipe, ['spicy', 'hot', 'fiery', 'intense', 'bold', 'chili', 'pepper'])
+  }),
+
   'Sad': (recipe) => ({
     match: recipe.tags?.some((tag) =>
       ['comfort_food', 'warm', 'hearty', 'cozy', 'pasta', 'baked', 'cheese', 'soupy'].includes(tag.name)) ||

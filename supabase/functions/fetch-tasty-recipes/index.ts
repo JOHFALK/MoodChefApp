@@ -28,16 +28,18 @@ serve(async (req) => {
     // Fetch current recipe counts per emotion
     const { data: existingRecipes, error: countError } = await supabaseClient
       .from('recipes')
-      .select('emotions')
+      .select('emotions, title')
       .eq('status', 'approved');
 
     if (countError) {
       throw countError;
     }
 
-    // Count recipes per emotion
+    // Count recipes per emotion and store existing titles
     const emotionCounts = new Map();
+    const existingTitles = new Set();
     existingRecipes?.forEach(recipe => {
+      existingTitles.add(recipe.title.toLowerCase());
       recipe.emotions.forEach((emotion: string) => {
         emotionCounts.set(emotion, (emotionCounts.get(emotion) || 0) + 1);
       });
@@ -48,7 +50,7 @@ serve(async (req) => {
     // Calculate how many more recipes we need per emotion
     const targetCount = 15;
     const neededRecipes = new Map();
-    ['Happy', 'Sad', 'Energetic', 'Calm', 'Tired', 'Stressed'].forEach(emotion => {
+    ['Happy', 'Sad', 'Energetic', 'Calm', 'Tired', 'Stressed', 'Angry'].forEach(emotion => {
       const current = emotionCounts.get(emotion) || 0;
       if (current < targetCount) {
         neededRecipes.set(emotion, targetCount - current);
@@ -70,17 +72,24 @@ serve(async (req) => {
     
     const processedRecipes = await processRecipes(allRecipes, neededRecipes);
 
+    // Filter out recipes with titles that already exist (case-insensitive)
+    const newRecipes = processedRecipes.filter(recipe => 
+      !existingTitles.has(recipe.title.toLowerCase())
+    );
+
+    console.log('New unique recipes to add:', newRecipes.length);
+
     // Insert recipes in batches
     const batchSize = 50;
     let successCount = 0;
     const errors = [];
 
-    for (let i = 0; i < processedRecipes.length; i += batchSize) {
-      const batch = processedRecipes.slice(i, i + batchSize);
+    for (let i = 0; i < newRecipes.length; i += batchSize) {
+      const batch = newRecipes.slice(i, i + batchSize);
       try {
         const { error } = await supabaseClient
           .from('recipes')
-          .upsert(batch, { onConflict: 'title' });
+          .insert(batch);
 
         if (error) {
           errors.push({ batch: i / batchSize + 1, error: error.message });
@@ -96,7 +105,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        message: 'Recipes processed successfully',
+        message: 'New recipes added successfully',
         count: successCount,
         errors: errors.length > 0 ? errors : undefined
       }),
