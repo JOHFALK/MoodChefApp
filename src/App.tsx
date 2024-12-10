@@ -11,6 +11,7 @@ import Pricing from "./pages/Pricing";
 import Submit from "./pages/Submit";
 import Community from "./pages/Community";
 import Battles from "./pages/Battles";
+import Recipe from "./pages/Recipe";
 import { Topic } from "@/components/community/forum/Topic";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/community/topic/:topicId" element={<Topic />} />
             <Route path="/battles" element={<Battles />} />
+            <Route path="/recipe/:recipeId" element={<Recipe />} />
           </Routes>
         </div>
       </BrowserRouter>
