@@ -6,8 +6,13 @@ export function useSubscription() {
     queryKey: ['subscription'],
     queryFn: async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          return { isSubscribed: false };
+        }
+
         if (!session) {
           console.log('No active session found');
           return { isSubscribed: false };
