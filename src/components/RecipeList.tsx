@@ -37,13 +37,18 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       // Apply emotion filter if emotions are selected
       if (selectedEmotions.length > 0) {
         setDebugInfo(prev => `${prev}\nApplying emotion filter: ${selectedEmotions.join(', ')}`);
-        query = query.contains('emotions', selectedEmotions);
+        // Using && to ensure all emotions are present
+        selectedEmotions.forEach(emotion => {
+          query = query.contains('emotions', [emotion]);
+        });
       }
 
       // Apply ingredient filter if ingredients are entered
       if (ingredients.length > 0) {
         setDebugInfo(prev => `${prev}\nApplying ingredient filter: ${ingredients.join(', ')}`);
-        query = query.contains('ingredients', ingredients);
+        ingredients.forEach(ingredient => {
+          query = query.contains('ingredients', [ingredient]);
+        });
       }
 
       const { data, error } = await query;
@@ -54,6 +59,7 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
       }
 
       setDebugInfo(prev => `${prev}\nFound ${data?.length || 0} recipes`);
+      console.log('Query response:', data); // Add this for debugging
 
       return (data || []).map(recipe => ({
         id: recipe.id,
@@ -61,8 +67,8 @@ export function RecipeList({ selectedEmotions, ingredients }: RecipeListProps) {
         description: recipe.description || '',
         cookingTime: recipe.cooking_time || 0,
         servings: 2,
-        emotions: recipe.emotions,
-        ingredients: recipe.ingredients,
+        emotions: recipe.emotions || [],
+        ingredients: recipe.ingredients || [],
         votes: recipe.votes || 0
       }));
     },
