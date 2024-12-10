@@ -6,7 +6,9 @@ import { RecipeInteractionForm } from "./RecipeInteractionForm";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSubscription } from "@/hooks/use-subscription";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface Recipe {
   id: string;
@@ -28,7 +30,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   const [showInteractionForm, setShowInteractionForm] = useState(false);
   const [votes, setVotes] = useState(recipe.votes || 0);
   const [hasVoted, setHasVoted] = useState(false);
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { data: subscription } = useSubscription();
+  const isPremium = subscription?.isSubscribed ?? false;
 
   useEffect(() => {
     checkUserVote();
@@ -44,7 +50,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         .select('id')
         .eq('recipe_id', recipe.id)
         .eq('user_id', session.user.id)
-        .maybeSingle(); // Use maybeSingle() instead of single()
+        .maybeSingle();
 
       if (error) {
         console.error('Error checking vote:', error);
@@ -124,73 +130,106 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     }
   };
 
+  const handleRecipeClick = (e: React.MouseEvent) => {
+    if (recipe.is_premium && !isPremium) {
+      e.preventDefault();
+      setShowPremiumDialog(true);
+    }
+  };
+
   return (
-    <Card className="w-full transition-all hover:shadow-lg">
-      <Link to={`/recipe/${recipe.id}`}>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">{recipe.title}</CardTitle>
-            {recipe.is_premium && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Lock className="w-3 h-3" />
-                Premium
-              </Badge>
-            )}
-          </div>
-          <CardDescription className="flex flex-wrap gap-2">
-            {recipe.emotions.map((emotion) => (
-              <Badge key={emotion} variant="secondary">
-                {emotion}
-              </Badge>
-            ))}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">{recipe.description}</p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span>{recipe.cookingTime} mins</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                <span>{recipe.servings} servings</span>
-              </div>
+    <>
+      <Card 
+        className={`w-full transition-all hover:shadow-lg relative ${
+          recipe.is_premium && !isPremium ? 'cursor-pointer' : ''
+        }`}
+        onClick={handleRecipeClick}
+      >
+        <Link to={`/recipe/${recipe.id}`} className={recipe.is_premium && !isPremium ? 'pointer-events-none' : ''}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl">{recipe.title}</CardTitle>
+              {recipe.is_premium && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  Premium
+                </Badge>
+              )}
             </div>
-            <Button
-              variant={hasVoted ? "secondary" : "outline"}
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault(); // Prevent navigation when clicking the vote button
-                handleVote();
-              }}
-              className="flex items-center gap-2"
-            >
-              <ThumbsUp className={`w-4 h-4 ${hasVoted ? "fill-current" : ""}`} />
-              <span>{votes}</span>
+            <CardDescription className="flex flex-wrap gap-2">
+              {recipe.emotions.map((emotion) => (
+                <Badge key={emotion} variant="secondary">
+                  {emotion}
+                </Badge>
+              ))}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className={`space-y-4 ${recipe.is_premium && !isPremium ? 'blur-[2px]' : ''}`}>
+            <p className="text-muted-foreground">{recipe.description}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{recipe.cookingTime} mins</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  <span>{recipe.servings} servings</span>
+                </div>
+              </div>
+              <Button
+                variant={hasVoted ? "secondary" : "outline"}
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleVote();
+                }}
+                className="flex items-center gap-2"
+              >
+                <ThumbsUp className={`w-4 h-4 ${hasVoted ? "fill-current" : ""}`} />
+                <span>{votes}</span>
+              </Button>
+            </div>
+            
+            {showInteractionForm ? (
+              <RecipeInteractionForm 
+                recipeId={recipe.id}
+                onSuccess={() => setShowInteractionForm(false)}
+              />
+            ) : (
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowInteractionForm(true);
+                }}
+              >
+                I Cooked This!
+              </Button>
+            )}
+          </CardContent>
+        </Link>
+      </Card>
+
+      <Dialog open={showPremiumDialog} onOpenChange={setShowPremiumDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Premium Recipe</DialogTitle>
+            <DialogDescription>
+              This delicious recipe is available exclusively to our premium members. Upgrade your account to unlock this and many other premium recipes!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-4 mt-4">
+            <Button variant="outline" onClick={() => setShowPremiumDialog(false)}>
+              Maybe Later
+            </Button>
+            <Button onClick={() => navigate("/pricing")}>
+              Upgrade to Premium
             </Button>
           </div>
-          
-          {showInteractionForm ? (
-            <RecipeInteractionForm 
-              recipeId={recipe.id}
-              onSuccess={() => setShowInteractionForm(false)}
-            />
-          ) : (
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={(e) => {
-                e.preventDefault(); // Prevent navigation when clicking the interaction button
-                setShowInteractionForm(true);
-              }}
-            >
-              I Cooked This!
-            </Button>
-          )}
-        </CardContent>
-      </Link>
-    </Card>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
