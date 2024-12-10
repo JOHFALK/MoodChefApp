@@ -22,9 +22,6 @@ export function Navigation() {
         if (error) {
           console.error('Session check error:', error);
           setUser(null);
-          if (location.pathname !== '/login') {
-            navigate('/login');
-          }
           return;
         }
         setUser(session?.user ?? null);
@@ -44,6 +41,7 @@ export function Navigation() {
       console.log('Auth state changed:', event, session?.user?.id);
       
       if (event === 'SIGNED_OUT') {
+        setUser(null);
         if (location.pathname !== '/login') {
           navigate('/login');
           toast({
@@ -51,16 +49,18 @@ export function Navigation() {
             description: "Please sign in again to continue.",
           });
         }
-        setUser(null);
       } else if (session?.user) {
         setUser(session.user);
+        if (location.pathname === '/login') {
+          navigate('/dashboard');
+        }
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, toast]);
 
   const handleAddRecipe = () => {
     if (!user) {
