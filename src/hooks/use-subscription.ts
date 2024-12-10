@@ -1,21 +1,42 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function useSubscription() {
   const navigate = useNavigate();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Effect to check session and redirect if needed
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.log('No active session, redirecting to login');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) {
+          console.log('No active session or session error, redirecting to login');
+          navigate("/login");
+          return;
+        }
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Session check error:', error);
         navigate("/login");
       }
     };
+
     checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate("/login");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return useQuery({
@@ -24,14 +45,8 @@ export function useSubscription() {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          navigate("/login");
-          return { isSubscribed: false };
-        }
-
-        if (!session) {
-          console.log('No active session found');
+        if (sessionError || !session) {
+          console.error('Session error or no session:', sessionError);
           navigate("/login");
           return { isSubscribed: false };
         }
@@ -47,7 +62,6 @@ export function useSubscription() {
         if (error) {
           console.error('Failed to check subscription:', error);
           if (error.message.includes('authenticate') || error.status === 401 || error.status === 403) {
-            // Session might be invalid, redirect to login
             navigate("/login");
             return { isSubscribed: false };
           }
@@ -60,8 +74,7 @@ export function useSubscription() {
         return { isSubscribed: false };
       }
     },
-    retry: false,
-    // Refresh subscription status every 5 minutes
-    refetchInterval: 5 * 60 * 1000,
+    enabled: isInitialized, // Only run the query after session check
+    retry: false, // Don't retry on failure
   });
 }
