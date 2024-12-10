@@ -41,12 +41,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => {
   // Initialize session from local storage
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        // Refresh the session if it exists
-        supabase.auth.refreshSession();
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Session initialization error:", error);
+          return;
+        }
+
+        if (session?.refresh_token) {
+          console.log("Valid session found, setting up auth listener");
+        }
+      } catch (error) {
+        console.error("Session initialization error:", error);
       }
-    });
+    };
+
+    initSession();
 
     // Set up auth state change listener
     const {
@@ -54,6 +65,8 @@ const App = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         console.log("Auth state changed:", _event, session.user?.id);
+      } else {
+        console.log("Auth state changed: No session");
       }
     });
 
